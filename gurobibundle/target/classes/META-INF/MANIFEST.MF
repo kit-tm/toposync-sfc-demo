@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1579676280811
+Build-Jdk: 11.0.5
+Built-By: felix
+Bundle-ClassPath: .,gurobi-7.5.2.jar
+Bundle-ManifestVersion: 2
+Bundle-Name: gurobi-bundle
+Bundle-SymbolicName: gurobi-bundle
+Bundle-Version: 1.0.0.SNAPSHOT
+Class-Path: classes/lib/gurobi-7.5.2.jar
+Created-By: Apache Maven Bundle Plugin
+Embed-Dependency: gurobi
+Embed-Transitive: true
+Embedded-Artifacts: gurobi-7.5.2.jar;g="gurobi";a="gurobi";v="7.5.2"
+Export-Package: gurobi;version="1.0.0"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.6))"
+Tool: Bnd-3.3.0.201609221906

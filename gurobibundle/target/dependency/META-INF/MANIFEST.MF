@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Vendor: Gurobi Optimization, LLC
+Implementation-Title: gurobi
+Implementation-Version: 8.1
+Specification-Vendor: Gurobi Optimization, LLC
+Name: Gurobi
+Created-By: 1.6.0_45 (Sun Microsystems Inc.)
+Specification-Title: Gurobi JAVA Classes
+Specification-Version: 8.1
+

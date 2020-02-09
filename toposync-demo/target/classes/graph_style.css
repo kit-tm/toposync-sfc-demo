@@ -1,0 +1,4 @@
+node {
+    shape: box;
+    fill-color: red; /* Default is black. */
+}

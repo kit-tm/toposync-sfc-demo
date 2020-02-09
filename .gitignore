@@ -1,0 +1,8 @@
+*.pyc
+*.project
+*.idea
+*.settings
+*.vscode
+*.log
+*.class
+*.iml
