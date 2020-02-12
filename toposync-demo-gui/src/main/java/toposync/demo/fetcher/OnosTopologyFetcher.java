@@ -1,6 +1,7 @@
-package fetcher;
+package toposync.demo.fetcher;
 
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,36 +10,43 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
 
 public class OnosTopologyFetcher implements GraphFetcher {
-    private static final String FETCH_URL = "http://localhost:8181/onos/v1/links";
+    private static final String LINK_FETCH_URL = "http://localhost:8181/onos/v1/links";
+    private static final String HOST_FETCH_URL = "http://localhost:8181/onos/v1/hosts";
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private URL fetchUrl = null;
 
-    public OnosTopologyFetcher() throws MalformedURLException {
-        fetchUrl = new URL(FETCH_URL);
+    public OnosTopologyFetcher() {
+
     }
 
     @Override
     public Graph fetch() throws IOException {
         String jsonLinks = fetchLinksViaOnosREST();
         Graph g = jsonToGraph(jsonLinks);
+        addHostsToGraph(g);
         return g;
     }
 
     private String fetchLinksViaOnosREST() throws IOException {
-        HttpURLConnection con = (HttpURLConnection) fetchUrl.openConnection();
+        return sendAuthenticatedGetRequest(LINK_FETCH_URL);
+    }
+
+    private String sendAuthenticatedGetRequest(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         String authString = "karaf:karaf";
         con.setRequestProperty("Authorization",
                                "Basic " + new String(Base64.getEncoder().encode(authString.getBytes())));
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        InputStream inputStream = con.getInputStream();
+        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
         String inputLine;
         StringBuilder content = new StringBuilder();
         while ((inputLine = in.readLine()) != null) {
@@ -79,5 +87,35 @@ public class OnosTopologyFetcher implements GraphFetcher {
 
     private String dpidOfEndpoint(JSONObject link) {
         return link.getString("device");
+    }
+
+    private void addHostsToGraph(Graph g) throws IOException {
+        String jsonHosts = sendAuthenticatedGetRequest(HOST_FETCH_URL);
+        System.out.println(jsonHosts);
+        JSONObject json = new JSONObject(jsonHosts);
+        JSONArray allHosts = json.getJSONArray("hosts");
+
+        for (Object current : allHosts) {
+            JSONObject currentHost = (JSONObject) current;
+            String ip = currentHost.getJSONArray("ipAddresses").getString(0);
+
+            JSONObject hostLocation = currentHost.getJSONArray("locations").getJSONObject(0);
+            String nodeId = hostLocation.getString("elementId");
+
+            String linkId = String.format("%s<->%s", ip, nodeId);
+
+            Node hostNode = g.addNode(ip);
+
+            boolean isServer = ip.equals("10.0.0.1");
+
+            if (isServer) {
+                hostNode.setAttribute("ui.class", "server");
+            } else {
+                hostNode.setAttribute("ui.class", "client");
+            }
+
+
+            g.addEdge(linkId, ip, nodeId, false);
+        }
     }
 }

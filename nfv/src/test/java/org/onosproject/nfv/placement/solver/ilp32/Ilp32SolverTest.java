@@ -50,7 +50,7 @@ public class Ilp32SolverTest {
         NfvPlacementRequest req = new NfvPlacementRequest(mockedGraph.getVertexes(), mockedGraph.getEdges(), trafficList, new ConstantLinkWeigher());
 
         Ilp32Solver solver = new Ilp32Solver();
-        NfvPlacementSolution solution = solver.solve(req);
+       NfvPlacementSolution solution = solver.solve(req);
 
         System.out.println("Solution tree:");
         for (TopologyEdge edge : solution.getSolutionEdgesByTraffic(traffic)) {

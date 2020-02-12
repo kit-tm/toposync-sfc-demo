@@ -1,4 +1,4 @@
-package fetcher;
+package toposync.demo.fetcher;
 
 import org.graphstream.graph.Graph;
 

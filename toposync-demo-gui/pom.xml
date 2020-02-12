@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>hiwi.tm</groupId>
-    <artifactId>toposync-demo</artifactId>
+    <artifactId>toposync-demo-gui</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <parent>
@@ -31,6 +31,10 @@
             <groupId>com.github.graphstream</groupId>
             <artifactId>gs-ui-swing</artifactId>
             <version>dev-041399a3e2-1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.graphstream</groupId>
+            <artifactId>gs-ui</artifactId>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>

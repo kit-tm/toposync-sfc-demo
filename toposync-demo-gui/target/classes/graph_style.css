@@ -1,0 +1,17 @@
+node {
+    shape: box;
+    fill-color: black;
+    text-background-mode: plain;
+    text-alignment: under;
+    text-size: 20;
+}
+
+node.server{
+    shape: circle;
+    fill-color: blue;
+}
+
+node.client{
+    shape: circle;
+    fill-color: green;
+}
