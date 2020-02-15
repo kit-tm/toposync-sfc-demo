@@ -1,5 +1,5 @@
 import sys 
-sys.path.append("/home/felix/Desktop/ba/code")
+sys.path.append("/home/felix/Desktop/toposync")
 
 import time
 import threading
@@ -12,12 +12,20 @@ from mininet.log import setLogLevel, info
 from mn.cn_rest import start_rest
 import mn.topo.Topos
 
+def printAndExecute(host, cmdString):
+    print("%s: %s" % (host.name, cmdString))
+    host.cmd(cmdString)
+
+def startARP(host, srcIP, srcMAC, dstIP, iface):
+    cmdString = 'python /home/felix/Desktop/ba/code/mn/hosts/cli/ARP/ARP_client.py \"%s\" %s %s %s' % (srcIP, dstIP, srcMAC, iface)
+    printAndExecute(host, cmdString)
+
 def main():
     setLogLevel('info')
 
     topo = mn.topo.Topos.TetraTopo()
     topo.addServer(topo.tbs[0])
-    topo.addClients(topo.tbs[5], topo.tbs[10])
+    topo.addClients([topo.tbs[5], topo.tbs[10]])
 
     net = Containernet(controller=RemoteController, topo=topo, build=False, autoSetMacs=True, link=TCLink)
     net.start()

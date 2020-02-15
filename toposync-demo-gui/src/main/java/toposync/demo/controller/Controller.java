@@ -20,15 +20,13 @@ public class Controller {
     }
 
     public void fetchGraph() {
-        Graph g = null;
         try {
-            g = fetcher.fetch();
+            Graph g = fetcher.fetch();
+            logger.info("Fetched graph with {} nodes, {} edges", g.getNodeCount(), g.getEdgeCount());
+            handler.showGraph(g);
         } catch (IOException e) {
-            handler.showError("Could not fetch Graph!");
+            handler.showError("Could not fetch Graph");
             logger.error("Could not fetch Graph!", e);
         }
-        logger.info("Fetched graph with {} nodes, {} edges", g.getNodeCount(), g.getEdgeCount());
-
-        handler.showGraph(g);
     }
 }

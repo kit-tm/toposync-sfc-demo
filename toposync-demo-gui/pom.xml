@@ -33,10 +33,6 @@
             <version>dev-041399a3e2-1</version>
         </dependency>
         <dependency>
-            <groupId>com.github.graphstream</groupId>
-            <artifactId>gs-ui</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20190722</version>
