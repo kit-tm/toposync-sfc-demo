@@ -1,5 +1,6 @@
 package main;
 
+import com.sun.net.httpserver.HttpServer;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
@@ -18,6 +19,8 @@ import org.onosproject.net.packet.PacketService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Set;
 
 @Component(immediate = true)
@@ -49,17 +52,31 @@ public class TopoSyncMain implements HostListener {
     private Host client1;
     private Host client2;
 
+    private HttpServer serverREST;
+
     @Activate
     protected void activate() {
         log.info("Activating..");
         appId = coreService.registerApplication("hiwi.tm.toposync-app");
         hostService.addListener(this);
+
+        try {
+            serverREST = HttpServer.create(new InetSocketAddress("localhost", 9355), 0);
+            serverREST.createContext("/tree", new SolutionRESTProvider());
+            serverREST.start();
+            log.info("Set up server..");
+        } catch (IOException e) {
+            log.error("Couldn't set up server.", e);
+        }
     }
 
     @Deactivate
     protected void deactivate() {
+        log.info("Stopping server..");
+        serverREST.stop(1);
+        log.info("Removing listeners..");
         hostService.removeListener(this);
-        log.info("Deactivating..");
+        log.info("Deactivated :)");
     }
 
     @Override

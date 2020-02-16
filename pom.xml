@@ -20,6 +20,7 @@
         <module>groupcom</module>
         <module>nfv</module>
         <module>stat</module>
+        <module>toposync-app</module>
     </modules>
 
 </project>
