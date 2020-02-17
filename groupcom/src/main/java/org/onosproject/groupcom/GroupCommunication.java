@@ -16,7 +16,6 @@
 package org.onosproject.groupcom;
 
 import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
@@ -49,7 +48,7 @@ import java.util.Set;
  * ONOS component which handles the group communication, i.e. group management, tree calculation and flow pushing for
  * the trees.
  */
-@Component(immediate = true)
+//@Component(immediate = true)
 @Service
 public class GroupCommunication implements GroupManagementService {
     private final Logger log = LoggerFactory.getLogger(getClass());

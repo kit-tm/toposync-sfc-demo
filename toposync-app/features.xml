@@ -6,5 +6,11 @@
         <feature>onos-api</feature>
         <bundle>mvn:hiwi.tm/toposync-app/1.0-SNAPSHOT</bundle>
         <bundle>wrap:mvn:com.sun.net.httpserver/http/20070405</bundle>
+        <bundle>mvn:gurobi-bundle/gurobi-bundle/1.0-SNAPSHOT</bundle>
+
+        <bundle>mvn:org.onosproject.nfv/nfv-app/1.0-SNAPSHOT</bundle>
+        <bundle>mvn:thesiscode.common/common/1.0-SNAPSHOT</bundle>
+        <bundle>mvn:gurobi-bundle/gurobi-bundle/1.0-SNAPSHOT</bundle>
+        <bundle>mvn:org.onosproject.groupcom/groupcom-app/1.0-SNAPSHOT</bundle>
     </feature>
 </features>

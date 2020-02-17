@@ -22,4 +22,10 @@
     <description>App for the TopoSync-SFC Demo (to calc and retrieve trees)
     </description>
     <artifact>mvn:hiwi.tm/toposync-app/1.0-SNAPSHOT</artifact>
+    <artifact>mvn:gurobi-bundle/gurobi-bundle/1.0-SNAPSHOT</artifact>
+
+    <artifact>mvn:org.onosproject.nfv/nfv-app/1.0-SNAPSHOT</artifact>
+    <artifact>mvn:thesiscode.common/common/1.0-SNAPSHOT</artifact>
+    <artifact>mvn:gurobi-bundle/gurobi-bundle/1.0-SNAPSHOT</artifact>
+    <artifact>mvn:org.onosproject.groupcom/groupcom-app/1.0-SNAPSHOT</artifact>
 </app>

@@ -3,7 +3,6 @@ package org.onosproject.nfv;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
@@ -37,12 +36,6 @@ import org.onosproject.net.topology.TopologyGraph;
 import org.onosproject.net.topology.TopologyListener;
 import org.onosproject.net.topology.TopologyService;
 import org.onosproject.net.topology.TopologyVertex;
-import org.onosproject.nfv.placement.deploy.NfvInstantiator;
-import org.onosproject.nfv.placement.solver.INfvPlacementSolver;
-import org.onosproject.nfv.placement.solver.NfvPlacementRequest;
-import org.onosproject.nfv.placement.solver.NfvPlacementSolution;
-import org.onosproject.nfv.placement.solver.ilp32.Ilp32Solver;
-import org.onosproject.nfv.placement.solver.mfcp.used.RefSfcPlacementSolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesiscode.common.flow.DefaultNfvTreeFlowPusher;
@@ -51,6 +44,12 @@ import thesiscode.common.group.AbstractMulticastGroup;
 import thesiscode.common.group.IGroupMember;
 import thesiscode.common.group.WrappedHost;
 import thesiscode.common.group.igmp.IgmpGroupIdentifier;
+import thesiscode.common.nfv.placement.deploy.NfvInstantiator;
+import thesiscode.common.nfv.placement.solver.INfvPlacementSolver;
+import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
+import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
+import thesiscode.common.nfv.placement.solver.ilp32.Ilp32Solver;
+import thesiscode.common.nfv.placement.solver.mfcp.used.RefSfcPlacementSolver;
 import thesiscode.common.nfv.traffic.NprNfvTypes;
 import thesiscode.common.nfv.traffic.NprResources;
 import thesiscode.common.nfv.traffic.NprTraffic;
@@ -68,7 +67,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component(immediate = true)
+//@Component(immediate = true)
 public class NFVApp implements PacketProcessor, TopologyListener {
     private Logger log = LoggerFactory.getLogger(getClass());
 

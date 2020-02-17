@@ -24,6 +24,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>gurobi-bundle</groupId>
+            <artifactId>gurobi-bundle</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.onosproject</groupId>
@@ -59,6 +65,12 @@
             <version>1.9.12</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.onosproject.nfv</groupId>
+            <artifactId>nfv-app</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -77,6 +89,14 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>3.3.0</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            org.onosproject.nfv.*,
+                            thesiscode.common.*
+                        </Export-Package>
+                    </instructions>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
