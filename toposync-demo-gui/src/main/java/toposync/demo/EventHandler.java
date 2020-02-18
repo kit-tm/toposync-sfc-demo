@@ -6,4 +6,8 @@ public interface EventHandler {
     void showError(String error);
 
     void showGraph(Graph g);
+
+    void topoSyncComputed();
+
+    void shortestPathComputed();
 }

@@ -16,6 +16,7 @@ public class DemoUI extends JFrame implements EventHandler {
 
     private Container contentPane;
     private TopoPane topoPane;
+    private TreeComputationPane treeComputationPane;
 
 
     public DemoUI() {
@@ -27,6 +28,7 @@ public class DemoUI extends JFrame implements EventHandler {
         initLayout();
         initTopoPane();
         initRefreshButton();
+        initTreeComputationPane();
 
         setVisible(true);
     }
@@ -52,8 +54,14 @@ public class DemoUI extends JFrame implements EventHandler {
         refresh.addActionListener(e -> controller.fetchGraph());
     }
 
+    private void initTreeComputationPane() {
+        treeComputationPane = new TreeComputationPane();
+        contentPane.add(treeComputationPane);
+    }
+
     public void setController(Controller controller) {
         this.controller = controller;
+        treeComputationPane.setController(controller);
     }
 
 
@@ -65,5 +73,17 @@ public class DemoUI extends JFrame implements EventHandler {
     @Override
     public void showGraph(Graph g) {
         topoPane.refresh(g);
+    }
+
+    @Override
+    public void topoSyncComputed() {
+        treeComputationPane.enableShortestPath();
+        // TODO
+    }
+
+    @Override
+    public void shortestPathComputed() {
+        treeComputationPane.enableTopoSync();
+        // TODO
     }
 }
