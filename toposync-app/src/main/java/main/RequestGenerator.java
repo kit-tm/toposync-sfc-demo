@@ -1,12 +1,7 @@
 package main;
 
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.onosproject.net.DeviceId;
-import org.onosproject.net.topology.TopologyEdge;
-import org.onosproject.net.topology.TopologyGraph;
-import org.onosproject.net.topology.TopologyService;
-import org.onosproject.net.topology.TopologyVertex;
+import org.onosproject.net.topology.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
@@ -15,13 +10,7 @@ import thesiscode.common.nfv.traffic.NprTraffic;
 import thesiscode.common.topo.ConstantLinkWeigher;
 import thesiscode.common.topo.ILinkWeigher;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 public class RequestGenerator {
@@ -31,19 +20,21 @@ public class RequestGenerator {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-    protected TopologyService topoService;
-
+    private TopologyService topoService;
     private ClientServerLocator clientServerLocator;
     private TopologyGraph graph;
 
-    public RequestGenerator(ClientServerLocator clientServerLocator) {
+    public RequestGenerator(ClientServerLocator clientServerLocator, TopologyService topoService) {
+        this.topoService = topoService;
         this.clientServerLocator = clientServerLocator;
         vnfTypes.add(NprNfvTypes.Type.TRANSCODER);
     }
 
     public NfvPlacementRequest createRequest() {
-        graph = topoService.getGraph(topoService.currentTopology());
+        Objects.requireNonNull(topoService);
+        Topology topo = Objects.requireNonNull(topoService.currentTopology());
+
+        graph = Objects.requireNonNull(topoService.getGraph(topo));
 
         List<NprTraffic> clientServerTraffic = computeTraffic();
 
