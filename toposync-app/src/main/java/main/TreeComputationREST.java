@@ -26,6 +26,14 @@ public class TreeComputationREST implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) {
+        try {
+            handleInternal(httpExchange);
+        } catch (Exception e) { // added here because this is called from another thread
+            logger.info("Exception while handling HTTP request", e);
+        }
+    }
+
+    private void handleInternal(HttpExchange httpExchange) {
         String method = httpExchange.getRequestMethod();
         logger.info("received HTTP request: {}", method);
 
@@ -49,6 +57,7 @@ public class TreeComputationREST implements HttpHandler {
         NfvPlacementRequest request = requestGenerator.createRequest();
 
         SfcPlacementSolver solver = new TPLSfcPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION, true, env, ALPHA, logger);
+
         NfvPlacementSolution solution = solver.solve(request);
         logger.info("Finished calculating. Solution: {}", solution);
         // TODO send as answer (JSON)
