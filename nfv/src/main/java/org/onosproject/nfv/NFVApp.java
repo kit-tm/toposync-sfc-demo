@@ -2,72 +2,36 @@ package org.onosproject.nfv;
 
 import gurobi.GRBEnv;
 import gurobi.GRBException;
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.onlab.packet.Ethernet;
-import org.onlab.packet.IPv4;
-import org.onlab.packet.Ip4Address;
+import org.apache.felix.scr.annotations.*;
+import org.onlab.packet.*;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
 import org.onosproject.groupcom.util.GroupManagementService;
-import org.onosproject.net.ConnectPoint;
-import org.onosproject.net.DeviceId;
-import org.onosproject.net.Host;
-import org.onosproject.net.Link;
-import org.onosproject.net.PortNumber;
+import org.onosproject.net.*;
 import org.onosproject.net.device.DeviceEvent;
 import org.onosproject.net.device.DeviceService;
-import org.onosproject.net.flow.DefaultFlowRule;
-import org.onosproject.net.flow.DefaultTrafficSelector;
-import org.onosproject.net.flow.DefaultTrafficTreatment;
-import org.onosproject.net.flow.FlowRule;
-import org.onosproject.net.flow.FlowRuleService;
+import org.onosproject.net.flow.*;
 import org.onosproject.net.host.HostService;
-import org.onosproject.net.packet.InboundPacket;
-import org.onosproject.net.packet.PacketContext;
-import org.onosproject.net.packet.PacketProcessor;
-import org.onosproject.net.packet.PacketService;
-import org.onosproject.net.topology.DefaultTopologyEdge;
-import org.onosproject.net.topology.TopologyEdge;
-import org.onosproject.net.topology.TopologyEvent;
-import org.onosproject.net.topology.TopologyGraph;
-import org.onosproject.net.topology.TopologyListener;
-import org.onosproject.net.topology.TopologyService;
-import org.onosproject.net.topology.TopologyVertex;
+import org.onosproject.net.packet.*;
+import org.onosproject.net.topology.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesiscode.common.flow.DefaultNfvTreeFlowPusher;
 import thesiscode.common.flow.PathFlowPusher;
-import thesiscode.common.group.AbstractMulticastGroup;
-import thesiscode.common.group.IGroupMember;
-import thesiscode.common.group.WrappedHost;
+import thesiscode.common.group.*;
 import thesiscode.common.group.igmp.IgmpGroupIdentifier;
 import thesiscode.common.nfv.placement.deploy.NfvInstantiator;
-import thesiscode.common.nfv.placement.solver.INfvPlacementSolver;
-import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
-import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
+import thesiscode.common.nfv.placement.solver.*;
 import thesiscode.common.nfv.placement.solver.ilp32.Ilp32Solver;
 import thesiscode.common.nfv.placement.solver.mfcp.used.RefSfcPlacementSolver;
-import thesiscode.common.nfv.traffic.NprNfvTypes;
-import thesiscode.common.nfv.traffic.NprResources;
-import thesiscode.common.nfv.traffic.NprTraffic;
-import thesiscode.common.topo.ConstantLinkWeigher;
-import thesiscode.common.topo.WrappedPoPVertex;
-import thesiscode.common.topo.WrappedVertex;
+import thesiscode.common.nfv.traffic.*;
+import thesiscode.common.topo.*;
 import thesiscode.common.tree.NFVPerSourceTree;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-//@Component(immediate = true)
+@Component(immediate = true)
 public class NFVApp implements PacketProcessor, TopologyListener {
     private Logger log = LoggerFactory.getLogger(getClass());
 
@@ -106,6 +70,7 @@ public class NFVApp implements PacketProcessor, TopologyListener {
 
     @Activate
     public void activate() throws GRBException {
+        log.info("installed!");
         appId = coreService.registerApplication("org.onosproject.nfv");
         byte[] ipProtosToRedirect = {IPv4.PROTOCOL_UDP};
         pusher = new PathFlowPusher(appId, flowRuleService, ipProtosToRedirect);
