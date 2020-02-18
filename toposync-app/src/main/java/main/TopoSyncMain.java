@@ -7,6 +7,7 @@ import org.apache.felix.scr.annotations.*;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
 import org.onosproject.net.host.HostService;
+import org.onosproject.net.topology.TopologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,9 @@ import java.net.InetSocketAddress;
 @Component(immediate = true)
 public class TopoSyncMain {
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected TopologyService topoService;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected CoreService coreService;
@@ -36,13 +40,13 @@ public class TopoSyncMain {
         log.info("Activating..");
         appId = coreService.registerApplication("hiwi.tm.toposync-app");
 
-        clientServerLocator = new ClientServerLocator();
+        clientServerLocator = new ClientServerLocator(hostService);
         hostService.addListener(clientServerLocator);
 
-        RequestGenerator requestGenerator = new RequestGenerator(clientServerLocator);
+        RequestGenerator requestGenerator = new RequestGenerator(clientServerLocator, topoService);
 
         log.info("Creating GRB Environment.");
-        env = new GRBEnv("/home/felix/from_app.log");
+        env = new GRBEnv("/home/felix/toposync_gurobi.log");
         log.info("Created GRB Environment: {}", env);
 
         try {
