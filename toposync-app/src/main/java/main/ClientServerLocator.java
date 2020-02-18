@@ -2,8 +2,7 @@ package main;
 
 import org.onlab.packet.IpAddress;
 import org.onosproject.net.Host;
-import org.onosproject.net.host.HostEvent;
-import org.onosproject.net.host.HostListener;
+import org.onosproject.net.host.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,21 +18,50 @@ public class ClientServerLocator implements HostListener {
     private Host client1;
     private Host client2;
 
+    private HostService hostService;
+
+    public ClientServerLocator(HostService hostService) {
+        this.hostService = hostService;
+        init();
+    }
+
+    /**
+     * Fetch server and clients from the hostService. Ensures that server and clients get set even if topo is already
+     * there.
+     */
+    private void init() {
+        for (Host host : hostService.getHosts()) {
+            if (hasExactlyOneIP(host)) {
+                updateHost(host);
+            }
+        }
+    }
+
     @Override
     public boolean isRelevant(HostEvent event) {
-        if (event == null || event.subject() == null || event.subject().ipAddresses() == null) {
-            log.info("Necessary information (event, subject or IPs) was null, event not relevant for us.");
+        if (event == null || event.subject() == null) {
+            log.info("Necessary information (event or subject) was null, event not relevant for us.");
             return false;
         }
 
-        final Set<IpAddress> ips = event.subject().ipAddresses();
+        final Host host = event.subject();
+        if (!hasExactlyOneIP(host)) {
+            log.info("Host was not relevant.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean hasExactlyOneIP(Host host) {
+        final Set<IpAddress> ips = host.ipAddresses();
         final int amountOfIps = ips.size();
 
         if (amountOfIps == 0) {
-            log.warn("found host with no IP: {}", event.subject());
+            log.warn("found host with no IP: {}", host);
             return false;
         } else if (amountOfIps > 1) {
-            log.warn("found host with multiple IPs: {}", event.subject());
+            log.warn("found host with multiple IPs: {}", host);
             return false;
         }
 
