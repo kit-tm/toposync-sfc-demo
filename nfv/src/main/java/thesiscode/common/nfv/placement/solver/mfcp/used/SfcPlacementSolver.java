@@ -1,30 +1,15 @@
 package thesiscode.common.nfv.placement.solver.mfcp.used;
 
-import gurobi.GRB;
-import gurobi.GRBEnv;
-import gurobi.GRBException;
-import gurobi.GRBLinExpr;
-import gurobi.GRBModel;
-import gurobi.GRBVar;
+import gurobi.*;
 import org.onosproject.net.topology.TopologyEdge;
 import org.onosproject.net.topology.TopologyVertex;
-import thesiscode.common.nfv.placement.solver.AbstractNfvIlpPlacementSolver;
-import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
-import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
-import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import org.slf4j.Logger;
-import thesiscode.common.nfv.traffic.NprNfvTypes;
-import thesiscode.common.nfv.traffic.NprResources;
-import thesiscode.common.nfv.traffic.NprTraffic;
+import thesiscode.common.nfv.placement.solver.*;
+import thesiscode.common.nfv.traffic.*;
 import thesiscode.common.topo.ILinkWeigher;
 import thesiscode.common.topo.WrappedPoPVertex;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**

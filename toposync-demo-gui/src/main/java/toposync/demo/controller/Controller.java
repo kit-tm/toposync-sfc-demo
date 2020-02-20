@@ -1,6 +1,7 @@
 package toposync.demo.controller;
 
 import org.graphstream.graph.Graph;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import toposync.demo.EventHandler;
@@ -61,9 +62,20 @@ public class Controller {
 
     private void sendRequest(HttpRequest request) {
         // TODO return json response
-        solutionClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                      .thenApply(HttpResponse::body)
-                      .thenAccept(logger::info)
-                      .join();
+
+        solutionClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(this::handleResponse);
+    }
+
+    private void handleResponse(HttpResponse<String> response) {
+        logger.info("Handling response: {}", response);
+
+        if (response.statusCode() == 500) {
+            logger.info("Status Code 500..");
+            handler.showError("Computation infeasible");
+        } else {
+            JSONObject respJson = new JSONObject(response.body());
+            logger.info("solution json: {}", respJson);
+            // TODO to graph, visualize solution
+        }
     }
 }
