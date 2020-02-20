@@ -3,6 +3,7 @@ package main;
 import com.sun.net.httpserver.HttpServer;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
+import main.rest.RESTDispatcher;
 import org.apache.felix.scr.annotations.*;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
@@ -51,7 +52,7 @@ public class TopoSyncMain {
 
         try {
             serverREST = HttpServer.create(new InetSocketAddress("localhost", 9355), 0);
-            serverREST.createContext("/tree", new TreeComputationREST(requestGenerator, env));
+            serverREST.createContext("/tree", new RESTDispatcher(requestGenerator, env));
             serverREST.start();
             log.info("Set up server..");
         } catch (IOException e) {
