@@ -25,6 +25,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20190722</version>
+        </dependency>
+
+        <dependency>
             <groupId>gurobi-bundle</groupId>
             <artifactId>gurobi-bundle</artifactId>
             <version>1.0-SNAPSHOT</version>

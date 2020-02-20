@@ -6,7 +6,6 @@ import gurobi.GRBEnv;
 import main.RequestGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
 
 import java.io.IOException;
 
@@ -35,9 +34,7 @@ public class RESTDispatcher implements HttpHandler {
         logger.info("received HTTP request: {}", method);
 
         if (method.equals("POST")) {
-            NfvPlacementSolution solution = treeComputation.handlePOST(httpExchange);
-            // TODO to JSON
-            String solutionJson = "";
+            String solutionJson = treeComputation.handlePOST(httpExchange);
             treeProvider.setLastSolution(solutionJson);
         } else if (method.equals("GET")) {
             treeProvider.handleGET(httpExchange);

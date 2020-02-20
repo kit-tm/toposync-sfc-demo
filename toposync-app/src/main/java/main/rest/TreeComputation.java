@@ -20,13 +20,15 @@ public class TreeComputation {
 
     private RequestGenerator requestGenerator;
     private GRBEnv env;
+    private SolutionJsonEncoder solutionJsonEncoder;
 
     public TreeComputation(RequestGenerator requestGenerator, GRBEnv env) {
         this.requestGenerator = requestGenerator;
         this.env = env;
+        this.solutionJsonEncoder = new SolutionJsonEncoder();
     }
 
-    protected NfvPlacementSolution handlePOST(HttpExchange httpExchange) throws IOException {
+    protected String handlePOST(HttpExchange httpExchange) throws IOException {
         String requestURI = httpExchange.getRequestURI().toString().toLowerCase();
         NfvPlacementSolution solution = null;
 
@@ -40,16 +42,17 @@ public class TreeComputation {
             logger.warn("unexpected request URI: {}", requestURI);
         }
 
+        String solutionJson = null;
+
         if (solution != null) {
-            String response = "";
-            // TODO to JSON
+            solutionJson = solutionJsonEncoder.toJson(solution);
             // TODO install solution
-            sendSolution(httpExchange, response);
+            sendSolution(httpExchange, solutionJson);
         } else {
             httpExchange.sendResponseHeaders(500, -1);
         }
 
-        return solution;
+        return solutionJson;
     }
 
     private NfvPlacementSolution computeTopoSyncTree() {
