@@ -7,8 +7,8 @@ import javax.swing.*;
 public class TreeComputationPane extends JPanel {
     private Controller controller;
 
-    private JToggleButton topoSync;
-    private JToggleButton shortestPath;
+    private JButton topoSync;
+    private JButton shortestPath;
 
     public TreeComputationPane() {
         initTopoSync();
@@ -16,7 +16,7 @@ public class TreeComputationPane extends JPanel {
     }
 
     private void initTopoSync() {
-        topoSync = new JToggleButton("TopoSync-SFC Tree");
+        topoSync = new JButton("TopoSync-SFC Tree");
         add(topoSync);
         topoSync.addActionListener(e -> {
             disableShortestPath();
@@ -26,7 +26,7 @@ public class TreeComputationPane extends JPanel {
     }
 
     private void initShortestPath() {
-        shortestPath = new JToggleButton("Shortest Path-SFC Tree");
+        shortestPath = new JButton("Shortest Path-SFC Tree");
         add(shortestPath);
         shortestPath.addActionListener(e -> {
             disableShortestPath();
