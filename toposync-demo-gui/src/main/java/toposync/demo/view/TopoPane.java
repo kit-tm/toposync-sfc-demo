@@ -1,6 +1,6 @@
 package toposync.demo.view;
 
-import org.graphstream.graph.*;
+import org.graphstream.graph.Graph;
 import org.graphstream.ui.swing_viewer.SwingViewer;
 import org.graphstream.ui.swing_viewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.awt.*;
 import java.net.URL;
 
 public class TopoPane extends JPanel {
@@ -18,7 +19,7 @@ public class TopoPane extends JPanel {
 
 
     public TopoPane() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
     }
 
     public void createTopoView(Graph g) {

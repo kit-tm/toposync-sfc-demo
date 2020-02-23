@@ -64,7 +64,6 @@ public class DemoUI extends JFrame implements GUI {
         treeComputationPane.setController(controller);
     }
 
-
     @Override
     public void showError(String error) {
         JOptionPane.showMessageDialog(this, error);

@@ -4,12 +4,13 @@ import toposync.demo.controller.Controller;
 import toposync.demo.model.fetcher.*;
 import toposync.demo.view.DemoUI;
 
+import javax.swing.*;
 import java.io.IOException;
 
 public class Main {
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
         System.setProperty("org.graphstream.ui", "swing"); // tells GraphStream to use Swing
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 
