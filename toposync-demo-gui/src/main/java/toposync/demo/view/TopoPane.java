@@ -1,6 +1,6 @@
 package toposync.demo.view;
 
-import org.graphstream.graph.Graph;
+import org.graphstream.graph.*;
 import org.graphstream.ui.swing_viewer.SwingViewer;
 import org.graphstream.ui.swing_viewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
@@ -26,7 +26,6 @@ public class TopoPane extends JPanel {
         currentViewer.enableAutoLayout();
         topoView = (ViewPanel) currentViewer.addDefaultView(false);
     }
-
 
     public void refresh(Graph g) {
         logger.info("Refreshing topo view..");
@@ -64,12 +63,20 @@ public class TopoPane extends JPanel {
                 return;
             }
 
-            if (uiClass.equals("server")) {
-                n.setAttribute("ui.label", "server");
-            } else if (uiClass.equals("client")) {
-                n.setAttribute("ui.label", "client");
+            switch (uiClass) {
+                case "server":
+                    n.setAttribute("ui.label", "server");
+                    break;
+                case "client":
+                    n.setAttribute("ui.label", "client");
+                    break;
+                case "vnf-pop":
+                    // TODO label?
+                    break;
+                case "vnf":
+                    n.setAttribute("ui.label", "transcoder");
+                    break;
             }
-
         });
     }
 }

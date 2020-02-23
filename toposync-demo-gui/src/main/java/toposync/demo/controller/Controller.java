@@ -1,81 +1,64 @@
 package toposync.demo.controller;
 
 import org.graphstream.graph.Graph;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import toposync.demo.EventHandler;
-import toposync.demo.fetcher.GraphFetcher;
+import toposync.demo.model.GUI;
+import toposync.demo.model.State;
+import toposync.demo.model.fetcher.TopologyFetcher;
+import toposync.demo.model.fetcher.TreeFetcher;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.*;
+import java.util.Objects;
 
 public class Controller {
     private Logger logger = LoggerFactory.getLogger(getClass());
-
-    private EventHandler handler;
-    private GraphFetcher fetcher;
-
-    private static final URI SHORTEST_PATH_REQUEST_URI = URI.create("http://127.0.0.1:9355/tree/shortest-path-sfc");
-    private static final URI TOPOSYNC_REQUEST_URI = URI.create("http://127.0.0.1:9355/tree/toposync-sfc");
-    private HttpClient solutionClient;
-    private HttpRequest topoSyncRequest;
-    private HttpRequest shortestPathRequest;
+    private State state;
+    private GUI gui;
+    private TopologyFetcher topoFetcher;
+    private TreeFetcher treeFetcher;
 
 
-    public Controller(EventHandler handler, GraphFetcher fetcher) {
-        this.handler = handler;
-        this.fetcher = fetcher;
-        this.solutionClient = HttpClient.newHttpClient();
-        this.topoSyncRequest = HttpRequest.newBuilder()
-                                          .uri(TOPOSYNC_REQUEST_URI)
-                                          .POST(HttpRequest.BodyPublishers.noBody())
-                                          .build();
-
-        this.shortestPathRequest = HttpRequest.newBuilder()
-                                              .uri(SHORTEST_PATH_REQUEST_URI)
-                                              .POST(HttpRequest.BodyPublishers.noBody())
-                                              .build();
+    public Controller(GUI gui, TopologyFetcher topoFetcher, TreeFetcher treeFetcher) {
+        this.state = new State();
+        this.gui = Objects.requireNonNull(gui);
+        state.addObserver(gui);
+        this.topoFetcher = Objects.requireNonNull(topoFetcher);
+        this.treeFetcher = Objects.requireNonNull(treeFetcher);
     }
 
-    public void fetchGraph() {
+    public void fetchTopology() {
         try {
-            Graph g = fetcher.fetch();
-            logger.info("Fetched graph with {} nodes, {} edges", g.getNodeCount(), g.getEdgeCount());
-            handler.showGraph(g);
+            Graph g = topoFetcher.fetchTopology();
+            logger.info("Fetched tree with {} nodes, {} edges", g.getNodeCount(), g.getEdgeCount());
+            state.setTopology(g);
         } catch (IOException e) {
-            handler.showError("Could not fetch Graph");
-            logger.error("Could not fetch Graph!", e);
+            gui.showError("Error when fetching topology.");
+            logger.error("Error when fetching topology.", e);
         }
     }
 
-    public void computeTopoSync() {
-        sendRequest(topoSyncRequest);
-        handler.topoSyncComputed();
+    public void fetchTopoSyncTree() {
+        try {
+            Graph tree = treeFetcher.fetchTopoSync();
+            logger.info("Fetched toposync solution with {} nodes, {} edges", tree.getNodeCount(), tree.getEdgeCount());
+            state.setSolution(tree);
+            gui.topoSyncFetched();
+        } catch (IOException | InterruptedException e) {
+            gui.showError("Error when fetching toposync solution.");
+            logger.error("Error when fetching toposync solution.", e);
+        }
     }
 
-    public void computeShortestPath() {
-        sendRequest(shortestPathRequest);
-        handler.shortestPathComputed();
-    }
-
-    private void sendRequest(HttpRequest request) {
-        // TODO return json response
-
-        solutionClient.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(this::handleResponse);
-    }
-
-    private void handleResponse(HttpResponse<String> response) {
-        logger.info("Handling response: {}", response);
-
-        if (response.statusCode() == 500) {
-            logger.info("Status Code 500..");
-            handler.showError("Computation infeasible");
-        } else {
-            JSONObject respJson = new JSONObject(response.body());
-            logger.info("solution json: {}", respJson);
-            // TODO to graph, visualize solution
+    public void fetchShortestPathTree() {
+        try {
+            Graph tree = treeFetcher.fetchShortestPath();
+            logger.info("Fetched spt solution with {} nodes, {} edges", tree.getNodeCount(), tree.getEdgeCount());
+            state.setSolution(tree);
+            gui.shortestPathFetched();
+        } catch (IOException | InterruptedException e) {
+            gui.showError("Error when fetching spt solution.");
+            logger.error("Error when fetching spt solution.", e);
         }
     }
 }

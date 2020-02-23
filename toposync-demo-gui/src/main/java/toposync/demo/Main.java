@@ -1,8 +1,7 @@
 package toposync.demo;
 
 import toposync.demo.controller.Controller;
-import toposync.demo.fetcher.GraphFetcher;
-import toposync.demo.fetcher.OnosTopologyFetcher;
+import toposync.demo.model.fetcher.*;
 import toposync.demo.view.DemoUI;
 
 import java.io.IOException;
@@ -14,15 +13,15 @@ public class Main {
         System.setProperty("org.graphstream.ui", "swing"); // tells GraphStream to use Swing
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 
-        GraphFetcher fetcher = new OnosTopologyFetcher();
-
-
         DemoUI ui = new DemoUI();
 
-        Controller controller = new Controller(ui, fetcher);
+        TopologyFetcher topologyFetcher = new OnosTopologyFetcher();
+        TreeFetcher treeFetcher = new OnosTreeFetcher(ui);
+
+        Controller controller = new Controller(ui, topologyFetcher, treeFetcher);
 
         ui.setController(controller);
 
-        controller.fetchGraph();
+        controller.fetchTopology();
     }
 }

@@ -1,4 +1,4 @@
-package toposync.demo.fetcher;
+package toposync.demo.model.fetcher;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -8,25 +8,18 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
 
-public class OnosTopologyFetcher implements GraphFetcher {
+public class OnosTopologyFetcher implements TopologyFetcher {
     private static final String LINK_FETCH_URL = "http://localhost:8181/onos/v1/links";
     private static final String HOST_FETCH_URL = "http://localhost:8181/onos/v1/hosts";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public OnosTopologyFetcher() {
-
-    }
-
     @Override
-    public Graph fetch() throws IOException {
+    public Graph fetchTopology() throws IOException {
         String jsonLinks = fetchLinksViaOnosREST();
         Graph g = jsonToGraph(jsonLinks);
         addHostsToGraph(g);

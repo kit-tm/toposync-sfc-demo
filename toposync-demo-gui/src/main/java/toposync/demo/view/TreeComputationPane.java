@@ -21,7 +21,7 @@ public class TreeComputationPane extends JPanel {
         topoSync.addActionListener(e -> {
             disableShortestPath();
             disableTopoSync();
-            controller.computeTopoSync();
+            controller.fetchTopoSyncTree();
         });
     }
 
@@ -31,7 +31,7 @@ public class TreeComputationPane extends JPanel {
         shortestPath.addActionListener(e -> {
             disableShortestPath();
             disableTopoSync();
-            controller.computeShortestPath();
+            controller.fetchShortestPathTree();
         });
     }
 

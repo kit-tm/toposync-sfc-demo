@@ -3,13 +3,13 @@ package toposync.demo.view;
 import org.graphstream.graph.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import toposync.demo.EventHandler;
 import toposync.demo.controller.Controller;
+import toposync.demo.model.GUI;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class DemoUI extends JFrame implements EventHandler {
+public class DemoUI extends JFrame implements GUI {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Controller controller;
@@ -51,7 +51,7 @@ public class DemoUI extends JFrame implements EventHandler {
         JButton refresh = new JButton("Refresh Topology");
         refresh.setAlignmentX(Component.CENTER_ALIGNMENT);
         contentPane.add(refresh);
-        refresh.addActionListener(e -> controller.fetchGraph());
+        refresh.addActionListener(e -> controller.fetchTopology());
     }
 
     private void initTreeComputationPane() {
@@ -71,19 +71,17 @@ public class DemoUI extends JFrame implements EventHandler {
     }
 
     @Override
-    public void showGraph(Graph g) {
-        topoPane.refresh(g);
-    }
-
-    @Override
-    public void topoSyncComputed() {
+    public void topoSyncFetched() {
         treeComputationPane.enableShortestPath();
-        // TODO
     }
 
     @Override
-    public void shortestPathComputed() {
+    public void shortestPathFetched() {
         treeComputationPane.enableTopoSync();
-        // TODO
+    }
+
+    @Override
+    public void updateGraph(Graph g) {
+        topoPane.refresh(g);
     }
 }

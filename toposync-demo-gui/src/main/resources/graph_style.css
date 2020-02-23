@@ -6,12 +6,27 @@ node {
     text-size: 20;
 }
 
-node.server{
+node.server {
     shape: circle;
     fill-color: blue;
 }
 
-node.client{
+node.client {
     shape: circle;
     fill-color: green;
+}
+
+node.vnf {
+    shape: circle;
+    fill-color: red;
+}
+
+edge.overlayEdge0 {
+    fill-color: purple;
+    stroke-width: 1px;
+}
+
+edge.overlayEdge1 {
+    fill-color: brown;
+    stroke-width: 1px;
 }
