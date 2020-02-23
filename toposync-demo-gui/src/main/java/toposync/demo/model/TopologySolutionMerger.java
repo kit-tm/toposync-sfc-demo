@@ -24,12 +24,11 @@ public class TopologySolutionMerger {
         merged.setAutoCreate(true);
 
         mergeInternal();
-        
+
         return merged;
     }
 
     private void mergeInternal() {
-        // TODO
         copyEdgesFromTopo();
         copyUiClassFromTopoNodes();
 
@@ -58,7 +57,11 @@ public class TopologySolutionMerger {
 
     private void copyEdgesFromSolution() {
         solution.edges().forEach(e -> {
-            Edge addedEdge = merged.addEdge(e.getId(), e.getNode0().getId(), e.getNode1().getId(), true);
+            final String edgeId = e.getId();
+            final String node0Id = e.getNode0().getId();
+            final String node1Id = e.getNode1().getId();
+
+            Edge addedEdge = merged.addEdge(edgeId, node0Id, node1Id, true);
             logger.info("ui class {}", e.getAttribute("ui.class"));
             addedEdge.setAttribute("ui.class", e.getAttribute("ui.class"));
         });

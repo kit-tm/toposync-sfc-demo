@@ -48,10 +48,10 @@ public class OnosTreeFetcher implements TreeFetcher {
 
     private Graph sendRequest(HttpRequest request) throws IOException, InterruptedException {
         HttpResponse<String> resp = solutionClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return handleResponse(request, resp);
+        return handleResponse(resp);
     }
 
-    private Graph handleResponse(HttpRequest request, HttpResponse<String> response) {
+    private Graph handleResponse(HttpResponse<String> response) {
         logger.info("Handling response: {}", response);
 
         if (response.statusCode() == 500) {
@@ -102,13 +102,17 @@ public class OnosTreeFetcher implements TreeFetcher {
     }
 
     private void addPlacementsToGraph(Graph g, JSONArray placements) {
-        for (Object current : placements) {
+        for (int i = 0; i < placements.length(); i++) {
+            Object current = placements.get(i);
             String placement = (String) current;
             Node pop = g.getNode(placement);
             pop.setAttribute("ui.class", "vnf-pop");
             Node vnf = g.addNode("vnf");
             vnf.setAttribute("ui.class", "vnf");
-            g.addEdge("vnf<->pop", pop.getId(), vnf.getId(), false);
+            Edge vnfToPop = g.addEdge("vnf->pop", pop.getId(), vnf.getId(), true);
+            vnfToPop.setAttribute("ui.class", "overlayEdge" + i);
+            Edge popToVnf = g.addEdge("pop->vnf", vnf.getId(), pop.getId(), true);
+            popToVnf.setAttribute("ui.class", "overlayEdge" + (i + 1));
         }
     }
 }
