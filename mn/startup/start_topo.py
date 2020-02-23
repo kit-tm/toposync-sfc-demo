@@ -4,6 +4,8 @@ sys.path.append("/home/felix/Desktop/toposync")
 import time
 import threading
 
+import argparse
+
 from mininet.net import Containernet
 from mininet.link import TCLink
 from mininet.node import RemoteController, Docker
@@ -21,11 +23,26 @@ def startARP(host, srcIP, srcMAC, dstIP, iface):
     printAndExecute(host, cmdString)
 
 def main():
+    parser = argparse.ArgumentParser(description='Starts a containernet topology and a REST server for VNF instantiation from controller.')
+    parser.add_argument('topology', metavar='T', type=str, nargs=1, help="the topology to start")
+
+    args = parser.parse_args()
+
+    topo = args.topology[0]
+
+    if topo == "tetra":
+        topo = mn.topo.Topos.TetraTopo()
+        topo.addServer(topo.tbs[0])
+        topo.addClients([topo.tbs[5], topo.tbs[10]])
+    elif topo == "paper":
+        topo = mn.topo.Topos.PaperTopo()
+    else:
+        print("[ERROR] Invalid topology: %s" % topo)
+
+
     setLogLevel('info')
 
-    topo = mn.topo.Topos.TetraTopo()
-    topo.addServer(topo.tbs[0])
-    topo.addClients([topo.tbs[5], topo.tbs[10]])
+
 
     net = Containernet(controller=RemoteController, topo=topo, build=False, autoSetMacs=True, link=TCLink)
     net.start()

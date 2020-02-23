@@ -1,6 +1,8 @@
 from mininet.topo import Topo
 from mininet.log import info
-            
+
+# 0x1 and 0x2 are PoPs
+
 def create_dpid_from_id(msb, id):
     "create DPID with given MSB and ID (LSBs). Zero Pad in between to fill 16 character"
     id = str(id)
@@ -17,6 +19,51 @@ def addLinkAndDebugPrint(topo, node1, node2):
         topo.addLink(node1, node2, **{'delay': '50ms'})
         print('added link %s <-> %s (artificial delay)' % (node1, node2))
     
+
+class PaperTopo( Topo ):
+        def __init__(self):
+            Topo.__init__(self)
+            self._nodes = [None] # None because we want indices to start at 1 (consistent numbering with full paper figure)
+            self.addNodes()
+            self.addInfrastructureLinks()
+            self.addHosts()
+
+        def addHosts(self):
+            client1 = self.addHost('c1host', ip='10.0.0.10')
+            addLinkAndDebugPrint(self, client1, self._nodes[9])
+
+            client2 = self.addHost('c2host', ip='10.0.0.11')
+            addLinkAndDebugPrint(self, client2, self._nodes[8])
+
+            server = self.addHost('shost', ip='10.0.0.1')
+            addLinkAndDebugPrint(self, server, self._nodes[1])
+
+        def addNodes(self):
+            for i in range(1, 10):
+                dpid = create_dpid_from_id(str(1), str(i))
+                added = self.addSwitch('s%s' % i, dpid=dpid)
+                self._nodes.append(added)
+
+        def addInfrastructureLinks(self):
+            # top row
+            addLinkAndDebugPrint(self, self._nodes[1], self._nodes[2])
+            addLinkAndDebugPrint(self, self._nodes[2], self._nodes[3])
+            addLinkAndDebugPrint(self, self._nodes[3], self._nodes[4])
+
+            # lower row
+            addLinkAndDebugPrint(self, self._nodes[5], self._nodes[6])
+            addLinkAndDebugPrint(self, self._nodes[6], self._nodes[7])
+            addLinkAndDebugPrint(self, self._nodes[7], self._nodes[8])
+
+            # connect upper row and lower row
+            addLinkAndDebugPrint(self, self._nodes[2], self._nodes[5])
+            addLinkAndDebugPrint(self, self._nodes[3], self._nodes[6])
+            addLinkAndDebugPrint(self, self._nodes[4], self._nodes[7])
+
+            # s9
+            addLinkAndDebugPrint(self, self._nodes[9], self._nodes[5])
+        
+            
 
 # DXTTs, DXTs and TBSs are switches, each TBS is connected to exactly one host
 # DXTTs DPID: 0x0 + id
@@ -66,14 +113,14 @@ class TetraTopo( Topo ):
 
     def addServer(self, node):
         print("adding server..")
-        server = self.addHost('server', ip='10.0.0.1')
+        server = self.addHost('shost', ip='10.0.0.1')
         addLinkAndDebugPrint(self, server, node)
 
     def addClients(self, nodes):
         print("adding clients..")
         for idx, node in enumerate(nodes):
             print("idx %d, node %s" %(idx, node))
-            client = self.addHost('client%i' % idx, ip='10.0.0.%i' % (idx+10))
+            client = self.addHost('c%ihost' % idx, ip='10.0.0.%i' % (idx+10))
             addLinkAndDebugPrint(self, client, node)
         
 
