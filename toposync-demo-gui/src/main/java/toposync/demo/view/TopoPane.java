@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.URL;
 
 public class TopoPane extends JPanel {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -51,13 +50,8 @@ public class TopoPane extends JPanel {
     }
 
     private void setCss(Graph g) {
-        URL cssPath = ClassLoader.getSystemClassLoader().getResource("graph_style.css");
-        if (cssPath == null) {
-            logger.warn("Didn't find the graph style sheet. Using fallback default style.");
-        } else {
-            logger.info("Found stylesheet. Setting graph style accordingly.");
-            g.setAttribute("ui.stylesheet", String.format("url('file://%s')", cssPath.getPath()));
-        }
+        g.setAttribute("ui.stylesheet", String.format("url('%s')", "toposync/demo/view/graph_style.css"));
+
         g.nodes().forEach(n -> {
             String uiClass = (String) n.getAttribute("ui.class");
             if (uiClass == null) {
