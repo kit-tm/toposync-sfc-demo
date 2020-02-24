@@ -5,6 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.release>11</maven.compiler.release>
@@ -19,7 +20,6 @@
         <module>common</module>
         <module>groupcom</module>
         <module>nfv</module>
-        <module>stat</module>
         <module>toposync-app</module>
     </modules>
 
