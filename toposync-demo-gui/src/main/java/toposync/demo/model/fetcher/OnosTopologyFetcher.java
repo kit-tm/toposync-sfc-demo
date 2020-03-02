@@ -2,7 +2,7 @@ package toposync.demo.model.fetcher;
 
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.graph.implementations.MultiGraph;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Base64;
+import java.util.*;
 
 public class OnosTopologyFetcher implements TopologyFetcher {
     private static final String LINK_FETCH_URL = "http://localhost:8181/onos/v1/links";
@@ -51,13 +51,15 @@ public class OnosTopologyFetcher implements TopologyFetcher {
     }
 
     private Graph jsonToGraph(String linkJson) {
-        Graph g = new SingleGraph("Topology");
+        Graph g = new MultiGraph("Topology");
         g.setStrict(false);
         g.setAutoCreate(true);
 
         JSONObject json = new JSONObject(linkJson);
 
         JSONArray allLinks = json.getJSONArray("links");
+
+        List<String> addedIds = new ArrayList<>();
 
         for (Object current : allLinks) {
             JSONObject oneLink = (JSONObject) current;
@@ -70,9 +72,12 @@ public class OnosTopologyFetcher implements TopologyFetcher {
 
             String linkId = String.format("%s->%s", srcDpid, dstDpid);
 
-            logger.debug(linkId);
+            String reverseId = String.format("%s->%s", dstDpid, srcDpid);
 
-            g.addEdge(linkId, srcDpid, dstDpid, false);
+            if (!addedIds.contains(reverseId)) { // only add each direction once
+                g.addEdge(linkId, srcDpid, dstDpid, false);
+                addedIds.add(linkId);
+            }
         }
 
         return g;
@@ -103,10 +108,13 @@ public class OnosTopologyFetcher implements TopologyFetcher {
 
             if (isServer) {
                 hostNode.setAttribute("ui.class", "server");
+                hostNode.setAttribute("ui.label", "server");
+                logger.debug("Setting ui.class and label server");
             } else {
                 hostNode.setAttribute("ui.class", "client");
+                hostNode.setAttribute("ui.label", "client");
+                logger.debug("Setting ui.class and label client");
             }
-
 
             g.addEdge(linkId, ip, nodeId, false);
         }

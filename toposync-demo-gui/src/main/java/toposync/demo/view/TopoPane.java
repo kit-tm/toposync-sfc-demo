@@ -9,10 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class TopoPane extends JPanel {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private Graph graph; // the displayed graph
     private SwingViewer currentViewer;
     private ViewPanel topoView;
 
@@ -22,13 +24,33 @@ public class TopoPane extends JPanel {
     }
 
     public void createTopoView(Graph g) {
+        this.graph = Objects.requireNonNull(g);
         currentViewer = new SwingViewer(g, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         currentViewer.enableAutoLayout();
         topoView = (ViewPanel) currentViewer.addDefaultView(false);
     }
 
+    /**
+     * Repaints the view of the old graph
+     */
+    public void refresh() {
+        logger.info("Refreshing topo view");
+        setCss(graph);
+        SwingUtilities.invokeLater(() -> {
+            topoView.revalidate();
+            topoView.repaint();
+            revalidate();
+            repaint();
+        });
+    }
+
+    /**
+     * Creates a new view of the passed graph. The layout is done new, the graph "wobbles"!
+     *
+     * @param g the new graph to display
+     */
     public void refresh(Graph g) {
-        logger.info("Refreshing topo view..");
+        logger.info("Refreshing topo view for graph {}", g);
 
         setCss(g);
 
@@ -51,27 +73,5 @@ public class TopoPane extends JPanel {
 
     private void setCss(Graph g) {
         g.setAttribute("ui.stylesheet", String.format("url('%s')", "toposync/demo/view/graph_style.css"));
-
-        g.nodes().forEach(n -> {
-            String uiClass = (String) n.getAttribute("ui.class");
-            if (uiClass == null) {
-                return;
-            }
-
-            switch (uiClass) {
-                case "server":
-                    n.setAttribute("ui.label", "server");
-                    break;
-                case "client":
-                    n.setAttribute("ui.label", "client");
-                    break;
-                case "vnf-pop":
-                    // TODO label?
-                    break;
-                case "vnf":
-                    n.setAttribute("ui.label", "transcoder");
-                    break;
-            }
-        });
     }
 }

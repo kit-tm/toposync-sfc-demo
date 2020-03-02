@@ -22,11 +22,11 @@ node.vnf {
 }
 
 edge.overlayEdge0 {
-    fill-color: purple;
+    fill-color: red;
     stroke-width: 1px;
 }
 
 edge.overlayEdge1 {
-    fill-color: brown;
+    fill-color: green;
     stroke-width: 1px;
 }

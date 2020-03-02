@@ -1,7 +1,7 @@
 package toposync.demo.model.fetcher;
 
 import org.graphstream.graph.*;
-import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.graph.implementations.MultiGraph;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class OnosTreeFetcher implements TreeFetcher {
     }
 
     private Graph solutionJsonToGraph(JSONObject respJson) {
-        Graph g = new SingleGraph("Solution");
+        Graph g = new MultiGraph("Solution");
         g.setStrict(false);
         g.setAutoCreate(true);
 
@@ -109,6 +109,7 @@ public class OnosTreeFetcher implements TreeFetcher {
             pop.setAttribute("ui.class", "vnf-pop");
             Node vnf = g.addNode("vnf");
             vnf.setAttribute("ui.class", "vnf");
+            vnf.setAttribute("ui.label", "transcoder");
             Edge vnfToPop = g.addEdge("vnf->pop", pop.getId(), vnf.getId(), true);
             vnfToPop.setAttribute("ui.class", "overlayEdge" + i);
             Edge popToVnf = g.addEdge("pop->vnf", vnf.getId(), pop.getId(), true);
