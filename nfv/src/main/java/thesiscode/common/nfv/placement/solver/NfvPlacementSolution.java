@@ -8,15 +8,9 @@ import thesiscode.common.nfv.traffic.NprTraffic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class NfvPlacementSolution {
-    // TODO move traffic maps to traffic class, instead have list of traffic here and set edges and placements for
-    // each traffic in solver
     private Map<NprTraffic, Set<TopologyEdge>> edgesPerTraffic;
     private Map<NprTraffic, Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements;
     private Map<NprNfvTypes.Type, Set<TopologyVertex>> sharedPlacements;
@@ -29,8 +23,11 @@ public class NfvPlacementSolution {
     private Map<NprTraffic, Double> maxDelayPerFlow;
     private Map<NprTraffic, Double> delayDeviationPerFlow;
     private Map<NprTraffic, List<Set<TopologyEdge>>> logicalEdgesPerTraffic;
+    private Map<NprTraffic, Map<TopologyVertex, Double>> delays;
 
-    public NfvPlacementSolution(Map<NprTraffic, Set<TopologyEdge>> edgesPerTraffic, Map<NprTraffic, Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements, NfvPlacementRequest request, double deviationSum, double delaySum, double networkLoad) {
+    public NfvPlacementSolution(Map<NprTraffic, Set<TopologyEdge>> edgesPerTraffic, Map<NprTraffic,
+            Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements, NfvPlacementRequest request, double deviationSum,
+                                double delaySum, double networkLoad) {
         this.edgesPerTraffic = edgesPerTraffic;
         this.placements = placements;
         this.request = request;
@@ -76,7 +73,15 @@ public class NfvPlacementSolution {
         return request;
     }
 
-    public NfvPlacementSolution(Map<NprTraffic, Set<TopologyEdge>> edgesPerTraffic, Map<NprTraffic, Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements, NfvPlacementRequest request, OptimizationGoal goal, double value, double deviationSum, double delaySum, double networkLoad, Map<NprTraffic, Double> deviationPerTraffic, Map<NprTraffic, Double> maxDelayPerTraffic) {
+    public void setDelays(Map<NprTraffic, Map<TopologyVertex, Double>> delays) {
+        this.delays = delays;
+    }
+
+    public NfvPlacementSolution(Map<NprTraffic, Set<TopologyEdge>> edgesPerTraffic, Map<NprTraffic,
+            Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements, NfvPlacementRequest request,
+                                OptimizationGoal goal, double value, double deviationSum, double delaySum,
+                                double networkLoad, Map<NprTraffic, Double> deviationPerTraffic, Map<NprTraffic,
+            Double> maxDelayPerTraffic) {
         this(edgesPerTraffic, placements, request, deviationSum, delaySum, networkLoad);
         this.goal = goal;
         this.value = value;
@@ -103,6 +108,10 @@ public class NfvPlacementSolution {
 
     public double getMaxDelayOfFlow(NprTraffic flow) {
         return maxDelayPerFlow.get(flow);
+    }
+
+    public Map<TopologyVertex, Double> getDelaysOfFlow(NprTraffic flow) {
+        return delays.get(flow);
     }
 
     public double getDelayDeviationOfFlow(NprTraffic flow) {

@@ -4,8 +4,13 @@ import gurobi.*;
 import org.onosproject.net.topology.TopologyEdge;
 import org.onosproject.net.topology.TopologyVertex;
 import org.slf4j.Logger;
-import thesiscode.common.nfv.placement.solver.*;
-import thesiscode.common.nfv.traffic.*;
+import thesiscode.common.nfv.placement.solver.AbstractNfvIlpPlacementSolver;
+import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
+import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
+import thesiscode.common.nfv.placement.solver.OptimizationGoal;
+import thesiscode.common.nfv.traffic.NprNfvTypes;
+import thesiscode.common.nfv.traffic.NprResources;
+import thesiscode.common.nfv.traffic.NprTraffic;
 import thesiscode.common.topo.ILinkWeigher;
 import thesiscode.common.topo.WrappedPoPVertex;
 
@@ -189,7 +194,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
         /*
          * add the tree variables (template method!)
-         * these are the MTZ variables in the ST and TPL case. in the ST case, the additional f variables have also to be added
+         * these are the MTZ variables in the ST and TPL case. in the ST case, the additional f variables have also
+         * to be added
          */
         addTreeVariables(model);
     }
@@ -215,9 +221,9 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             }
             delaySfc.put(flow, dstToVar);
             minDelayPerSfcFlow.put(flow, model.addVar(0.0, Double.MAX_VALUE, 0.0, GRB.INTEGER,
-                                                      "minDelaySfc_" + flowCnt));
+                    "minDelaySfc_" + flowCnt));
             maxDelayPerSfcFlow.put(flow, model.addVar(0.0, Double.MAX_VALUE, 0.0, GRB.INTEGER,
-                                                      "maxDelaySfc_" + flowCnt));
+                    "maxDelaySfc_" + flowCnt));
             flowCnt++;
         }
     }
@@ -309,7 +315,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             Map<TopologyVertex, GRBVar> placedAtVert = new HashMap<>();
             for (TopologyVertex vert : nodes) {
                 placedAtVert.put(vert, model.addVar(0.0, 1.0, 0.0, GRB.BINARY,
-                                                    "p_" + type.name() + "_" + vert.toString()));
+                        "p_" + type.name() + "_" + vert.toString()));
             }
             pTypePlaced.put(type, placedAtVert);
         }
@@ -359,9 +365,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                     if (log != null) {
                         log.info("adding p, vert devId: {}", vert.toString());
                     }
-                    String name =
-                            "p_t_d_" + flowCnt + "_forDst=" + dst.toString() + "_" + flow.getIngressNode().toString() +
-                                    "@" + vert.toString() + "?";
+                    String name = "p_t_d_" + flowCnt + "_forDst=" + dst.toString() + "_" + flow.getIngressNode()
+                                                                                               .toString() + "@" + vert.toString() + "?";
 
                     placedAtVert.put(vert, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, name));
                 }
@@ -375,8 +380,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 for (TopologyVertex dst : flow.getEgressNodes()) {
                     Map<TopologyVertex, GRBVar> placedAtVert = new HashMap<>();
                     for (TopologyVertex vert : nodes) {
-                        String name = "p_t_d_" + flowCnt + "_forDst=" + dst.toString() + "_" + type.name() + "@" +
-                                vert.toString() + "?";
+                        String name =
+                                "p_t_d_" + flowCnt + "_forDst=" + dst.toString() + "_" + type.name() + "@" + vert.toString() + "?";
                         placedAtVert.put(vert, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, name));
                     }
                     dstToMap.put(dst, placedAtVert);
@@ -446,8 +451,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                     if (vert instanceof WrappedPoPVertex) {
                         WrappedPoPVertex wrappedPoPVertex = (WrappedPoPVertex) vert;
                         for (NprNfvTypes.Type type : allTypes) {
-                            objExpr.addTerm(
-                                    alpha * wrappedPoPVertex.getDeploymentCost(type), pTypePlaced.get(type).get(vert));
+                            objExpr.addTerm(alpha * wrappedPoPVertex.getDeploymentCost(type), pTypePlaced.get(type)
+                                                                                                         .get(vert));
                         }
                     }
 
@@ -472,8 +477,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                     if (vert instanceof WrappedPoPVertex) {
                         WrappedPoPVertex wrappedPoPVertex = (WrappedPoPVertex) vert;
                         for (NprNfvTypes.Type type : allTypes) {
-                            objExpr.addTerm(
-                                    alpha * wrappedPoPVertex.getDeploymentCost(type), pTypePlaced.get(type).get(vert));
+                            objExpr.addTerm(alpha * wrappedPoPVertex.getDeploymentCost(type), pTypePlaced.get(type)
+                                                                                                         .get(vert));
                         }
                     }
 
@@ -594,8 +599,10 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 if (log != null) {
                     log.info("{} is pop: {}", vert.toString(), isPoP);
                 }
-                model.addConstr(pTypePlaced.get(type).get(vert), GRB.LESS_EQUAL, isPoP,
-                                "constr_only-placed-at-pops_" + type.name() + "_" + vert.toString());
+                model.addConstr(pTypePlaced.get(type)
+                                           .get(vert), GRB.LESS_EQUAL, isPoP,
+                        "constr_only-placed-at-pops_" + type.name() + "_" + vert
+                        .toString());
             }
         }
     }
@@ -611,7 +618,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                         sum.addTerm(NprNfvTypes.getRequirements(type).get(resource), pTypePlaced.get(type).get(vertex));
                     }
                     model.addConstr(sum, GRB.LESS_EQUAL, wrappedPoPVertex.getResourceCapacity(resource),
-                                    "constr_pop_cap_" + resource.name() + "_" + vertex.toString());
+                            "constr_pop_cap_" + resource
+                            .name() + "_" + vertex.toString());
                 }
             }
         }
@@ -663,10 +671,13 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         for (int j = 0; j <= flow.getSfc().size(); j++) {
             for (TopologyEdge edge : edges) {
                 for (TopologyVertex dst : flow.getEgressNodes()) {
-                    String name =
-                            "constr_f_{" + flowIndex + ";" + dst.toString() + "}^" + j + "(" + edge.src().toString() +
-                                    "->" + edge.dst().toString() + ")<=f_" + flowIndex + "^" + j + "(" +
-                                    edge.src().toString() + "->" + edge.dst().toString();
+                    String name = "constr_f_{" + flowIndex + ";" + dst.toString() + "}^" + j + "(" + edge.src()
+                                                                                                         .toString() + "->" + edge
+                                          .dst()
+                                          .toString() + ")<=f_" + flowIndex + "^" + j + "(" + edge.src()
+                                                                                                  .toString() + "->" + edge
+                                          .dst()
+                                          .toString();
                     model.addConstr(fForLogicalAndDst.get(flowIndex)
                                                      .get(dst)
                                                      .get(j)
@@ -684,9 +695,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 for (TopologyVertex dst : flow.getEgressNodes()) {
                     sumOfL.addTerm(1.0, fForLogicalAndDst.get(flowIndex).get(dst).get(j).get(edge));
                 }
-                String name =
-                        "constr_f_" + flowIndex + "^" + j + "(" + edge.src().toString() + "->" + edge.dst().toString() +
-                                ")<=sumFTD";
+                String name = "constr_f_" + flowIndex + "^" + j + "(" + edge.src().toString() + "->" + edge.dst()
+                                                                                                           .toString() + ")<=sumFTD";
                 model.addConstr(fForLogical.get(flowIndex).get(j).get(edge), GRB.LESS_EQUAL, sumOfL, name);
             }
         }
@@ -701,8 +711,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                         continue;
                     }
                     GRBVar pTVar = pPlacedForFlow.get(flowIndex).get(j).get(vert);
-                    String name = "constr_p_" + flowIndex + "^" + j + "(" + vert.toString() + ")<=p^" + j + "(" +
-                            vert.toString() + ")";
+                    String name =
+                            "constr_p_" + flowIndex + "^" + j + "(" + vert.toString() + ")<=p^" + j + "(" + vert.toString() + ")";
                     model.addConstr(pTVar, GRB.LESS_EQUAL, pVar, name);
                 }
             }
@@ -765,8 +775,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                     rhs.addTerm(-1.0, pPlacedForFlowAndDest.get(flowIndex).get(j + 1).get(dst).get(vert));
 
                     String name =
-                            "constr_cons_" + flowIndex + "vert=" + vert.toString() + ",dst=" + dst.toString() + "log=" +
-                                    j;
+                            "constr_cons_" + flowIndex + "vert=" + vert.toString() + ",dst=" + dst.toString() + "log" + "=" + j;
                     model.addConstr(lhs, GRB.EQUAL, rhs, name);
                 }
             }
@@ -859,8 +868,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 }
                 vnfCnt++;
             }
-            model.addConstr(delaySum, GRB.EQUAL, delaySfc.get(flow).get(dst),
-                            "delay_" + flowIndex + "_dst=" + dst.toString());
+            model.addConstr(delaySum, GRB.EQUAL, delaySfc.get(flow)
+                                                         .get(dst), "delay_" + flowIndex + "_dst=" + dst.toString());
 
             // the min max delay constrs only work with the objective of TPL and ST
             if (goal == OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION) {
@@ -870,13 +879,15 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         }
 
         if (goal != OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION) {
-            model.addGenConstrMax(maxDelayPerSfcFlow.get(flow), delaySfc.get(flow).values().toArray(new GRBVar[0]), 0.0,
-                                  "constr_maxDelay_" + flowIndex);
+            model.addGenConstrMax(maxDelayPerSfcFlow.get(flow), delaySfc.get(flow)
+                                                                        .values()
+                                                                        .toArray(new GRBVar[0]), 0.0,
+                    "constr_maxDelay_" + flowIndex);
 
             model.addGenConstrMin(minDelayPerSfcFlow.get(flow), delaySfc.get(flow)
                                                                         .values()
                                                                         .toArray(new GRBVar[0]), Double.MAX_VALUE,
-                                  "constr_minDelay_" + flowIndex);
+                    "constr_minDelay_" + flowIndex);
         }
 
 
@@ -896,6 +907,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
     @Override
     protected NfvPlacementSolution extractSolution(GRBModel model) throws GRBException {
+        Map<NprTraffic, Map<TopologyVertex, Double>> delays = new HashMap<>();
         print("This is the solution:");
 
         Map<NprTraffic, Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements = new HashMap<>();
@@ -937,9 +949,12 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
             delaySum += maxDelayOfFlow;
 
+            delays.put(noSfcFlow, new HashMap<>());
             for (TopologyVertex dst : noSfcFlow.getEgressNodes()) {
-                print("delay for " + dst.toString() + ":" +
-                              noSfcPlacementSolver.getDelayForFlowAndDestination(noSfcFlow, dst).get(GRB.DoubleAttr.X));
+                final double delay = noSfcPlacementSolver.getDelayForFlowAndDestination(noSfcFlow, dst)
+                                                         .get(GRB.DoubleAttr.X);
+                delays.get(noSfcFlow).put(dst, delay);
+                print("delay for " + dst.toString() + ":" + delay);
             }
             Set<TopologyEdge> edgesForTraffic = new HashSet<>();
             for (TopologyEdge edge : edges) {
@@ -958,6 +973,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
         int flowCnt = 0;
         for (NprTraffic sfcFlow : trafficSfc) {
+            delays.put(sfcFlow, new HashMap<>());
 
             print(sfcFlow.toString());
 
@@ -976,7 +992,9 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             delaySum += maxDelayOfFlow;
 
             for (TopologyVertex dst : sfcFlow.getEgressNodes()) {
-                print("delay for " + dst.toString() + ":" + delaySfc.get(sfcFlow).get(dst).get(GRB.DoubleAttr.X));
+                final double delay = delaySfc.get(sfcFlow).get(dst).get(GRB.DoubleAttr.X);
+                delays.get(sfcFlow).put(dst, delay);
+                print("delay for " + dst.toString() + ":" + delay);
             }
             placements.computeIfAbsent(sfcFlow, k -> new HashMap<>());
             solutionEdges.computeIfAbsent(sfcFlow, k -> new HashSet<>());
@@ -990,8 +1008,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                             placements.get(sfcFlow).computeIfAbsent(type, k -> new HashSet<>());
                             placements.get(sfcFlow).get(type).add(vert);
 
-                            StringBuilder toPrint = new StringBuilder(
-                                    "  " + type.name() + "@" + vert.toString() + ", for: {");
+                            StringBuilder toPrint = new StringBuilder("  " + type.name() + "@" + vert.toString() + ","
+                                                                      + " for: {");
                             for (TopologyVertex dst : sfcFlow.getEgressNodes()) {
                                 if (pPlacedForFlowAndDest.get(flowCnt)
                                                          .get(j)
@@ -1022,9 +1040,10 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                         if (Math.round(fForLogical.get(flowCnt).get(jl).get(edge).get(GRB.DoubleAttr.X)) != 0) {
                             edgesPerLogical.add(edge);
                             solutionEdges.get(sfcFlow).add(edge);
-                            networkLoad +=
-                                    Math.round(fForLogical.get(flowCnt).get(jl).get(edge).get(GRB.DoubleAttr.X)) *
-                                            sfcFlow.getDemand();
+                            networkLoad += Math.round(fForLogical.get(flowCnt)
+                                                                 .get(jl)
+                                                                 .get(edge)
+                                                                 .get(GRB.DoubleAttr.X)) * sfcFlow.getDemand();
                             print("  " + edge.src().toString() + "->" + edge.dst().toString());
                         }
                     }
@@ -1034,9 +1053,10 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                         if (Math.round(fForLogical.get(flowCnt).get(jl).get(edge).get(GRB.DoubleAttr.X)) != 0) {
                             edgesPerLogical.add(edge);
                             solutionEdges.get(sfcFlow).add(edge);
-                            networkLoad +=
-                                    Math.round(fForLogical.get(flowCnt).get(jl).get(edge).get(GRB.DoubleAttr.X)) *
-                                            sfcFlow.getDemand();
+                            networkLoad += Math.round(fForLogical.get(flowCnt)
+                                                                 .get(jl)
+                                                                 .get(edge)
+                                                                 .get(GRB.DoubleAttr.X)) * sfcFlow.getDemand();
                             print("  " + edge.src().toString() + "->" + edge.dst().toString());
                         }
                     }
@@ -1046,9 +1066,10 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                         if (Math.round(fForLogical.get(flowCnt).get(jl).get(edge).get(GRB.DoubleAttr.X)) != 0) {
                             edgesPerLogical.add(edge);
                             solutionEdges.get(sfcFlow).add(edge);
-                            networkLoad +=
-                                    Math.round(fForLogical.get(flowCnt).get(jl).get(edge).get(GRB.DoubleAttr.X)) *
-                                            sfcFlow.getDemand();
+                            networkLoad += Math.round(fForLogical.get(flowCnt)
+                                                                 .get(jl)
+                                                                 .get(edge)
+                                                                 .get(GRB.DoubleAttr.X)) * sfcFlow.getDemand();
                             print("  " + edge.src().toString() + "->" + edge.dst().toString());
                         }
                     }
@@ -1059,10 +1080,14 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             flowCnt++;
         }
 
-        NfvPlacementSolution sol = new NfvPlacementSolution(solutionEdges, placements, req, goal, model.get(GRB.DoubleAttr.ObjVal), deviationSum, delaySum, networkLoad, deviationPerFlow, maxDelayPerFlow);
+        NfvPlacementSolution sol = new NfvPlacementSolution(solutionEdges, placements, req, goal,
+                model.get(GRB.DoubleAttr.ObjVal), deviationSum, delaySum, networkLoad, deviationPerFlow,
+                maxDelayPerFlow);
         for (NprTraffic flow : logicalToRealEdgesForTraffics.keySet()) {
             sol.setLogicalEdgesForTraffic(flow, logicalToRealEdgesForTraffics.get(flow));
         }
+
+        sol.setDelays(delays);
 
         return sol;
     }

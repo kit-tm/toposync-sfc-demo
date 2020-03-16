@@ -5,8 +5,12 @@ import gurobi.GRBEnv;
 import main.RequestGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thesiscode.common.nfv.placement.solver.*;
-import thesiscode.common.nfv.placement.solver.mfcp.used.*;
+import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
+import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
+import thesiscode.common.nfv.placement.solver.OptimizationGoal;
+import thesiscode.common.nfv.placement.solver.mfcp.used.RefSfcPlacementSolver;
+import thesiscode.common.nfv.placement.solver.mfcp.used.SfcPlacementSolver;
+import thesiscode.common.nfv.placement.solver.mfcp.used.TPLSfcPlacementSolver;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -58,7 +62,8 @@ public class TreeComputation {
     private NfvPlacementSolution computeTopoSyncTree() {
         NfvPlacementRequest request = requestGenerator.createRequest();
 
-        SfcPlacementSolver solver = new TPLSfcPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION, true, env, ALPHA, logger);
+        SfcPlacementSolver solver = new TPLSfcPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION, true,
+                env, ALPHA);
 
         NfvPlacementSolution solution = solver.solve(request);
         logger.info("Finished calculating TopoSync-SFC solution: {}", solution);

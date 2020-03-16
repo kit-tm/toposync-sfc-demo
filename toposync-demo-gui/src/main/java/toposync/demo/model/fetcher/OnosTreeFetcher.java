@@ -1,6 +1,8 @@
 package toposync.demo.model.fetcher;
 
-import org.graphstream.graph.*;
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.MultiGraph;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,7 +12,10 @@ import toposync.demo.model.GUI;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class OnosTreeFetcher implements TreeFetcher {
     private static final URI SHORTEST_PATH_REQUEST_URI = URI.create("http://127.0.0.1:9355/tree/shortest-path-sfc");
@@ -73,10 +78,23 @@ public class OnosTreeFetcher implements TreeFetcher {
         JSONArray edges = respJson.getJSONObject("solution").getJSONArray("edges");
         JSONArray placements = respJson.getJSONObject("solution").getJSONArray("placement");
 
+        JSONObject delays = respJson.getJSONObject("delays");
+
         addEdgesToGraph(g, edges);
         addPlacementsToGraph(g, placements);
+        addDelaysToGraph(g, delays);
 
         return g;
+    }
+
+    private void addDelaysToGraph(Graph g, JSONObject delays) {
+        for (Map.Entry<String, Object> entry : delays.toMap().entrySet()) {
+            final String nodeId = entry.getKey();
+            final Object delay = entry.getValue();
+
+            g.getNode(nodeId).setAttribute("ui.label", "hops: " + delay);
+        }
+
     }
 
     private void addEdgesToGraph(Graph g, JSONArray allEdgesJson) {

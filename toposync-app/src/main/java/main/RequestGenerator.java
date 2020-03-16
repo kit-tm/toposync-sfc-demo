@@ -14,7 +14,7 @@ import java.util.*;
 public class RequestGenerator {
     private static final List<NprNfvTypes.Type> vnfTypes = new ArrayList<>();
     private static final int BANDWIDTH = 10;
-    private static final int DELAY = 5;
+    public static final int DELAY = 5;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 

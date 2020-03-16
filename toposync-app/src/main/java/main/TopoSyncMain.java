@@ -71,7 +71,6 @@ public class TopoSyncMain {
 
         log.info("Deactivating GRBEnv");
         env.dispose();
-        // TODO how to dispose of GRBEnv properly?
 
         log.info("Deactivated :)");
     }

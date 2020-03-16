@@ -1,6 +1,8 @@
 package toposync.demo.model;
 
-import org.graphstream.graph.*;
+import org.graphstream.graph.Edge;
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +46,22 @@ public class TopologyAugmentation {
     private void removeOldEdges() {
         for (Node n : topology) {
             for (Edge e : n) {
-                if (e != null) {
-                    final String id = e.getId();
-                    if (id.startsWith("solEdge") || id.equals("vnf->pop") || id.equals("pop->vnf")) {
-                        topology.removeEdge(e);
-                        logger.debug("removed old edge: {}", e);
-                    }
+                removeEdgeIfSolutionEdge(e);
+            }
+        }
 
-                }
+        for (int i = 0; i < topology.getEdgeCount(); i++) {
+            Edge e = topology.getEdge(i);
+            removeEdgeIfSolutionEdge(e);
+        }
+    }
+
+    private void removeEdgeIfSolutionEdge(Edge e) {
+        if (e != null) {
+            final String id = e.getId();
+            if (id.startsWith("solEdge") || id.equals("vnf->pop") || id.equals("pop->vnf")) {
+                topology.removeEdge(e);
+                logger.debug("removed old edge: {}", e);
             }
         }
     }
