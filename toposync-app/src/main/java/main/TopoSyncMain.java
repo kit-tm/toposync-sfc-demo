@@ -4,13 +4,18 @@ import com.sun.net.httpserver.HttpServer;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import main.rest.RESTDispatcher;
+import main.rest.SolutionInstaller;
 import org.apache.felix.scr.annotations.*;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
+import org.onosproject.net.device.DeviceService;
+import org.onosproject.net.flow.FlowRuleService;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.topology.TopologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thesiscode.common.flow.DefaultNfvTreeFlowPusher;
+import thesiscode.common.nfv.placement.deploy.NfvInstantiator;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -28,6 +33,12 @@ public class TopoSyncMain {
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     private HostService hostService;
 
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    private FlowRuleService flowRuleService;
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    private DeviceService deviceService;
+
     public static ApplicationId appId;
 
     private GRBEnv env;
@@ -41,24 +52,35 @@ public class TopoSyncMain {
         log.info("Activating..");
         appId = coreService.registerApplication("hiwi.tm.toposync-app");
 
+        setUpClientServerLocator();
+        setUpGurobi();
+        setUpRESTServer();
+    }
+
+    private void setUpClientServerLocator() {
         clientServerLocator = new ClientServerLocator(hostService);
         hostService.addListener(clientServerLocator);
+    }
 
-        RequestGenerator requestGenerator = new RequestGenerator(clientServerLocator, topoService);
-
+    private void setUpGurobi() throws GRBException {
         log.info("Creating GRB Environment.");
         env = new GRBEnv("/home/felix/toposync_gurobi.log");
         log.info("Created GRB Environment: {}", env);
+    }
+
+    private void setUpRESTServer() {
+        RequestGenerator requestGenerator = new RequestGenerator(clientServerLocator, topoService);
+        SolutionInstaller installer = new SolutionInstaller(new DefaultNfvTreeFlowPusher(appId, flowRuleService),
+                new NfvInstantiator(), deviceService, hostService);
 
         try {
             serverREST = HttpServer.create(new InetSocketAddress("localhost", 9355), 0);
-            serverREST.createContext("/tree", new RESTDispatcher(requestGenerator, env));
+            serverREST.createContext("/tree", new RESTDispatcher(requestGenerator, env, installer));
             serverREST.start();
             log.info("Set up server..");
         } catch (IOException e) {
             log.error("Couldn't set up server.", e);
         }
-
     }
 
     @Deactivate

@@ -10,9 +10,9 @@ import java.util.Set;
 
 public class ClientServerLocator implements HostListener {
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private static final IpAddress SERVER_ADDRESS = IpAddress.valueOf("10.0.0.1");
-    private static final IpAddress CLIENT_1_ADDRESS = IpAddress.valueOf("10.0.0.10");
-    private static final IpAddress CLIENT_2_ADDRESS = IpAddress.valueOf("10.0.0.11");
+    public static final IpAddress SERVER_ADDRESS = IpAddress.valueOf("10.0.0.1");
+    public static final IpAddress CLIENT_1_ADDRESS = IpAddress.valueOf("10.0.0.10");
+    public static final IpAddress CLIENT_2_ADDRESS = IpAddress.valueOf("10.0.0.11");
 
     private Host server;
     private Host client1;

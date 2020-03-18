@@ -24,12 +24,14 @@ public class TreeComputation {
 
     private RequestGenerator requestGenerator;
     private GRBEnv env;
+    private SolutionInstaller installer;
     private SolutionJsonEncoder solutionJsonEncoder;
 
-    public TreeComputation(RequestGenerator requestGenerator, GRBEnv env) {
+    public TreeComputation(RequestGenerator requestGenerator, GRBEnv env, SolutionInstaller installer) {
         this.requestGenerator = requestGenerator;
         this.env = env;
         this.solutionJsonEncoder = new SolutionJsonEncoder();
+        this.installer = installer;
     }
 
     protected String handlePOST(HttpExchange httpExchange) throws IOException {
@@ -49,8 +51,8 @@ public class TreeComputation {
         String solutionJson = null;
 
         if (solution != null) {
+            installer.installSolution(solution);
             solutionJson = solutionJsonEncoder.toJson(solution);
-            // TODO install solution
             sendSolution(httpExchange, solutionJson);
         } else {
             httpExchange.sendResponseHeaders(500, -1);
