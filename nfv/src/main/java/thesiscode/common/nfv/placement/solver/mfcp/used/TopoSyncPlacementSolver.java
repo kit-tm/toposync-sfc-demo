@@ -1,34 +1,24 @@
 package thesiscode.common.nfv.placement.solver.mfcp.used;
 
-import gurobi.GRB;
-import gurobi.GRBEnv;
-import gurobi.GRBException;
-import gurobi.GRBLinExpr;
-import gurobi.GRBModel;
-import gurobi.GRBVar;
+import gurobi.*;
 import org.onosproject.net.topology.TopologyEdge;
 import org.onosproject.net.topology.TopologyVertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesiscode.common.nfv.placement.solver.AbstractNfvIlpPlacementSolver;
 import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
 import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
 import thesiscode.common.nfv.placement.solver.OptimizationGoal;
-import thesiscode.common.nfv.placement.solver.mfcp.legacy.SimpleMfcpSolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import thesiscode.common.nfv.traffic.NprTraffic;
 import thesiscode.common.topo.ILinkWeigher;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of the ILP without SFC.
  */
-public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
-    private Logger log = LoggerFactory.getLogger(SimpleMfcpSolver.class);
+public class TopoSyncPlacementSolver extends AbstractNfvIlpPlacementSolver {
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     private Set<TopologyVertex> nodes;
     private Set<TopologyEdge> edges;
@@ -56,7 +46,7 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
      * @param verbose whether to verbosely output the solution in the console
      * @param env     the {@link gurobi.GRBEnv} this solver uses
      */
-    public NoSfcPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env) {
+    public TopoSyncPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env) {
         this.goal = goal;
         super.verbose = verbose;
         super.env = env;
@@ -127,9 +117,9 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         for (NprTraffic flow : traffic) {
             Map<TopologyVertex, GRBVar> vertToVar = new HashMap<>();
             for (TopologyVertex vertex : nodes) {
-                vertToVar.put(vertex, model.addVar(0.0,
-                                                   nodes.size() - 1, 0.0, GRB.INTEGER,
-                                                   "u_" + flowCnt + "_vert=" + vertex.toString()));
+                vertToVar.put(vertex, model.addVar(0.0, nodes.size() - 1, 0.0, GRB.INTEGER,
+                        "u_" + flowCnt + "_vert=" + vertex
+                        .toString()));
             }
             u.put(flow, vertToVar);
             flowCnt++;
@@ -144,8 +134,12 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             for (TopologyVertex dst : flow.getEgressNodes()) { // logical edge s->dst
                 Map<TopologyEdge, GRBVar> edgeToVar = new HashMap<>();
                 for (TopologyEdge edge : edges) {
-                    String name = "l_" + trafficCnt + '_' + dst.deviceId().toString() + '_' +
-                            edge.src().deviceId().toString() + "->" + edge.dst().deviceId().toString();
+                    String name = "l_" + trafficCnt + '_' + dst.deviceId().toString() + '_' + edge.src()
+                                                                                                  .deviceId()
+                                                                                                  .toString() + "->" + edge
+                                          .dst()
+                                          .deviceId()
+                                          .toString();
                     edgeToVar.put(edge, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, name));
                 }
                 dstToEdge.put(dst, edgeToVar);
@@ -177,8 +171,9 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         for (NprTraffic flow : traffic) {
             Map<TopologyEdge, GRBVar> edgeToVar = new HashMap<>();
             for (TopologyEdge edge : edges) {
-                String name = "lAtAll_" + trafficCnt + '_' + edge.src().deviceId().toString() + "->" +
-                        edge.dst().deviceId().toString();
+                String name = "lAtAll_" + trafficCnt + '_' + edge.src().deviceId().toString() + "->" + edge.dst()
+                                                                                                           .deviceId()
+                                                                                                           .toString();
                 edgeToVar.put(edge, model.addVar(0.0, 1.0, 0.0, GRB.BINARY, name));
             }
             lEdgeUsedAtAll.put(flow, edgeToVar);
@@ -323,15 +318,17 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
             if (goal != OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION) {
                 //max delay
-                model.addGenConstrMax(maxDelayPerFlow.get(flow), delay.get(flow).values().toArray(new GRBVar[0]), 0.0,
-                                      "constr_maxDelay" + flowCnt);
+                model.addGenConstrMax(maxDelayPerFlow.get(flow), delay.get(flow)
+                                                                      .values()
+                                                                      .toArray(new GRBVar[0]), 0.0,
+                        "constr_maxDelay" + flowCnt);
 
 
                 // min delay
                 model.addGenConstrMin(minDelayPerFlow.get(flow), delay.get(flow)
                                                                       .values()
                                                                       .toArray(new GRBVar[0]), Double.MAX_VALUE,
-                                      "constr_minDelay" + flowCnt);
+                        "constr_minDelay" + flowCnt);
             }
 
 
@@ -347,8 +344,10 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 for (TopologyVertex dst : flow.getEgressNodes()) {
                     GRBLinExpr lExpr = new GRBLinExpr();
                     lExpr.addTerm(1.0, lEdgeUsedForDestination.get(flow).get(dst).get(edge));
-                    String name = "constr_l_{t;d}<=l_t" + flowCnt + '_' + edge.src().deviceId().toString() + "->" +
-                            edge.dst().deviceId().toString();
+                    String name = "constr_l_{t;d}<=l_t" + flowCnt + '_' + edge.src().deviceId().toString() + "->" + edge
+                            .dst()
+                            .deviceId()
+                            .toString();
 
                     model.addConstr(lExpr, GRB.LESS_EQUAL, lEdgeUsedAtAll.get(flow).get(edge), name);
                 }
@@ -359,8 +358,11 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                     lSum.addTerm(1.0, lEdgeUsedForDestination.get(flow).get(dst).get(edge));
                 }
 
-                String name = "constr_l_{t;d}<=sum_l_t_" + flowCnt + '_' + edge.src().deviceId().toString() + "->" +
-                        edge.dst().deviceId().toString();
+                String name = "constr_l_{t;d}<=sum_l_t_" + flowCnt + '_' + edge.src()
+                                                                               .deviceId()
+                                                                               .toString() + "->" + edge.dst()
+                                                                                                        .deviceId()
+                                                                                                        .toString();
 
                 model.addConstr(lEdgeUsedAtAll.get(flow).get(edge), GRB.LESS_EQUAL, lSum, name);
             }
@@ -375,8 +377,9 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             for (NprTraffic flow : traffic) {
                 expr.addTerm(flow.getDemand(), lEdgeUsedAtAll.get(flow).get(edge));
             }
-            String name =
-                    "constr_cap_not_exc_" + edge.src().deviceId().toString() + "->" + edge.dst().deviceId().toString();
+            String name = "constr_cap_not_exc_" + edge.src().deviceId().toString() + "->" + edge.dst()
+                                                                                                .deviceId()
+                                                                                                .toString();
             model.addConstr(expr, GRB.LESS_EQUAL, linkWeigher.getBandwidth(edge), name);
         }
     }
@@ -455,8 +458,9 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                         }
                     }
 
-                    String name = "constr_dupl_" + flowCnt + "dst=" + dst.deviceId().toString() + "vert=" +
-                            vert.deviceId().toString();
+                    String name = "constr_dupl_" + flowCnt + "dst=" + dst.deviceId()
+                                                                         .toString() + "vert=" + vert.deviceId()
+                                                                                                     .toString();
                     model.addConstr(fromVert, GRB.EQUAL, toVert, name);
 
                 }
@@ -527,6 +531,7 @@ public class NoSfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             }
         }
 
-        return new NfvPlacementSolution(solutionEdges, new HashMap<>(), req, goal, model.get(GRB.DoubleAttr.ObjNVal), deviationSum, delaySum, networkLoad, deviationMap, maxDelayMap);
+        return new NfvPlacementSolution(solutionEdges, new HashMap<>(), req, goal, model.get(GRB.DoubleAttr.ObjNVal),
+                deviationSum, delaySum, networkLoad, deviationMap, maxDelayMap);
     }
 }

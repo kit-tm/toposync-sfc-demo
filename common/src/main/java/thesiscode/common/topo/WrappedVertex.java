@@ -23,15 +23,4 @@ public class WrappedVertex implements TopologyVertex {
         return wrapped.toString();
     }
 
-    /*@Override
-    public int hashCode() {
-        return wrapped.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return wrapped.equals(obj);
-    }*/
-
-
 }

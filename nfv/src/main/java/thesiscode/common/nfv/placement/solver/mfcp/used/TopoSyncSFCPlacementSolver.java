@@ -1,15 +1,10 @@
 package thesiscode.common.nfv.placement.solver.mfcp.used;
 
-import gurobi.GRB;
-import gurobi.GRBEnv;
-import gurobi.GRBException;
-import gurobi.GRBLinExpr;
-import gurobi.GRBModel;
-import gurobi.GRBVar;
+import gurobi.*;
 import org.onosproject.net.topology.TopologyEdge;
 import org.onosproject.net.topology.TopologyVertex;
-import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import org.slf4j.Logger;
+import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import thesiscode.common.nfv.traffic.NprTraffic;
 
 import java.util.ArrayList;
@@ -18,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The implementation of the SFC-TPL variant of the formulated ILP. Ensures that a tree is constructed per logical edge.
+ * The implementation of TopoSyncSFC. Ensures that a tree is constructed per logical edge.
  */
-public class TPLSfcPlacementSolver extends SfcPlacementSolver {
+public class TopoSyncSFCPlacementSolver extends SfcPlacementSolver {
     /*
      * MTZ variables
      */
@@ -35,7 +30,7 @@ public class TPLSfcPlacementSolver extends SfcPlacementSolver {
      * @param env     the environment (passing this as a parameter requires only one license check )
      * @param alpha   the weight factor for the VNF deployment cost
      */
-    public TPLSfcPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env, double alpha) {
+    public TopoSyncSFCPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env, double alpha) {
         super(goal, verbose, env, alpha, Integer.MAX_VALUE);
     }
 
@@ -47,7 +42,8 @@ public class TPLSfcPlacementSolver extends SfcPlacementSolver {
      * @param env     the environment (passing this as a parameter requires only one license check )
      * @param alpha   the weight factor for the VNF deployment cost
      */
-    public TPLSfcPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env, double alpha, int loadConstraint) {
+    public TopoSyncSFCPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env, double alpha,
+                                      int loadConstraint) {
         super(goal, verbose, env, alpha, loadConstraint);
     }
 
@@ -59,7 +55,7 @@ public class TPLSfcPlacementSolver extends SfcPlacementSolver {
      * @param env     the environment (passing this as a parameter requires only one license check )
      * @param alpha   the weight factor for the VNF deployment cost
      */
-    public TPLSfcPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env, double alpha, Logger log) {
+    public TopoSyncSFCPlacementSolver(OptimizationGoal goal, boolean verbose, GRBEnv env, double alpha, Logger log) {
         super(goal, verbose, env, alpha, log);
     }
 
@@ -74,9 +70,9 @@ public class TPLSfcPlacementSolver extends SfcPlacementSolver {
             for (int j = 0; j <= flow.getSfc().size(); j++) {
                 Map<TopologyVertex, GRBVar> vertToNumber = new HashMap<>();
                 for (TopologyVertex vert : nodes) {
-                    vertToNumber.put(vert, model.addVar(0.0,
-                                                        nodes.size() - 1, 0.0, GRB.INTEGER,
-                                                        "u_" + i + "_" + j + "_vert=" + vert.toString()));
+                    vertToNumber.put(vert, model.addVar(0.0, nodes.size() - 1, 0.0, GRB.INTEGER,
+                            "u_" + i + "_" + j + "_vert=" + vert
+                            .toString()));
                 }
                 logicalEdgeToMap.add(vertToNumber);
             }
@@ -98,9 +94,11 @@ public class TPLSfcPlacementSolver extends SfcPlacementSolver {
                 rhsSource.multAdd(nodes.size() - 1, rhsWithoutMult);
 
 
-                model.addConstr(u.get(flowIndex).get(j).get(vertex), GRB.LESS_EQUAL, rhsSource,
-                                "u_t^{(k,l)}(v)<=(|V|-1)*(1-p_t^k(v))_" + flowIndex + "_" + j + "_vert=" +
-                                        vertex.toString());
+                model.addConstr(u.get(flowIndex)
+                                 .get(j)
+                                 .get(vertex), GRB.LESS_EQUAL, rhsSource,
+                        "u_t^{(k,l)}(v)<=(|V|-1)*(1-p_t^k(v))_" + flowIndex + "_" + j + "_vert=" + vertex
+                        .toString());
 
 
                 model.addConstr(u.get(flowIndex).get(j).get(vertex), GRB.LESS_EQUAL, nodes.size() - 1, "eho");

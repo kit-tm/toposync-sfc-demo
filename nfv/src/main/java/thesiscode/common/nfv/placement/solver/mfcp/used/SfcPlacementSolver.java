@@ -82,7 +82,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
     /**
      * for non-sfc flows
      */
-    private NoSfcPlacementSolver noSfcPlacementSolver;
+    private TopoSyncPlacementSolver topoSyncPlacementSolver;
 
 
     private double alpha; // weight factor for the VNF deployment cost
@@ -104,7 +104,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         this.loadConstraint = loadConstraint;
         super.verbose = verbose;
         super.env = env;
-        this.noSfcPlacementSolver = new NoSfcPlacementSolver(goal, verbose, env);
+        this.topoSyncPlacementSolver = new TopoSyncPlacementSolver(goal, verbose, env);
     }
 
     /**
@@ -122,7 +122,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         this.log = log;
         super.verbose = verbose;
         super.env = env;
-        this.noSfcPlacementSolver = new NoSfcPlacementSolver(goal, verbose, env);
+        this.topoSyncPlacementSolver = new TopoSyncPlacementSolver(goal, verbose, env);
     }
 
     @Override
@@ -148,7 +148,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
          * create request for non-sfc flows and let the NoSfcPlacementSolver init itself
          */
         NfvPlacementRequest noSfcReq = new NfvPlacementRequest(nodes, edges, trafficNoSfc, linkWeigher);
-        noSfcPlacementSolver.init(noSfcReq, model);
+        topoSyncPlacementSolver.init(noSfcReq, model);
 
         // store all VNF types which are used by the flows
         allTypes = new HashSet<>();
@@ -170,7 +170,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
      * @throws GRBException can be thrown by Gurobi
      */
     private void addNonSfcVariables(GRBModel model) throws GRBException {
-        noSfcPlacementSolver.addVariables(model);
+        topoSyncPlacementSolver.addVariables(model);
     }
 
     /**
@@ -416,8 +416,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             deviations.addTerm(-1.0, minDelayPerSfcFlow.get(sfcFlow));
         }
         for (NprTraffic noSfcFlow : trafficNoSfc) {
-            deviations.addTerm(1.0, noSfcPlacementSolver.getMaxDelayForFlow(noSfcFlow));
-            deviations.addTerm(-1.0, noSfcPlacementSolver.getMinDelayForFlow(noSfcFlow));
+            deviations.addTerm(1.0, topoSyncPlacementSolver.getMaxDelayForFlow(noSfcFlow));
+            deviations.addTerm(-1.0, topoSyncPlacementSolver.getMinDelayForFlow(noSfcFlow));
         }
 
         GRBLinExpr objExpr = new GRBLinExpr();
@@ -429,7 +429,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 // no sfc case
                 for (NprTraffic flow : trafficNoSfc) {
                     for (TopologyEdge edge : edges) {
-                        objExpr.addTerm(flow.getDemand(), noSfcPlacementSolver.getIsEdgeUsedAtAllForFlow(flow, edge));
+                        objExpr.addTerm(flow.getDemand(), topoSyncPlacementSolver.getIsEdgeUsedAtAllForFlow(flow, edge));
                     }
                 }
                 // sfc case
@@ -467,7 +467,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 }
                 for (NprTraffic flow : trafficNoSfc) { // delay for non-SFC flows
                     for (TopologyVertex dst : flow.getEgressNodes()) {
-                        objExpr.addTerm(1.0, noSfcPlacementSolver.getDelayForFlowAndDestination(flow, dst));
+                        objExpr.addTerm(1.0, topoSyncPlacementSolver.getDelayForFlowAndDestination(flow, dst));
                     }
                 }
                 /*
@@ -492,7 +492,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 }
                 // add max delays for non sfc flows
                 for (NprTraffic flow : trafficNoSfc) {
-                    objExpr.addTerm(1.0, noSfcPlacementSolver.getMaxDelayForFlow(flow));
+                    objExpr.addTerm(1.0, topoSyncPlacementSolver.getMaxDelayForFlow(flow));
                 }
                 // add deployment cost
                 for (NprNfvTypes.Type type : allTypes) {
@@ -570,7 +570,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         // no sfc
         for (NprTraffic flow : trafficNoSfc) {
             for (TopologyEdge edge : edges) {
-                load.addTerm(flow.getDemand(), noSfcPlacementSolver.getIsEdgeUsedAtAllForFlow(flow, edge));
+                load.addTerm(flow.getDemand(), topoSyncPlacementSolver.getIsEdgeUsedAtAllForFlow(flow, edge));
             }
         }
         // sfc
@@ -636,7 +636,7 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 }
             }
             for (NprTraffic noSfcFlow : trafficNoSfc) {
-                sum.addTerm(noSfcFlow.getDemand(), noSfcPlacementSolver.getIsEdgeUsedAtAllForFlow(noSfcFlow, edge));
+                sum.addTerm(noSfcFlow.getDemand(), topoSyncPlacementSolver.getIsEdgeUsedAtAllForFlow(noSfcFlow, edge));
             }
             String name = "constr_edge-cap_" + edge.src().toString() + "->" + edge.dst().toString();
             model.addConstr(sum, GRB.LESS_EQUAL, linkWeigher.getBandwidth(edge), name);
@@ -894,14 +894,14 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
     }
 
     private void addNonSfcPerFlowConstraints(GRBModel model) throws GRBException {
-        noSfcPlacementSolver.addDecisionVariableConnectionConstraints(model);
-        noSfcPlacementSolver.addSourceFlowConservation(model);
-        noSfcPlacementSolver.addDestinationFlowConservation(model);
-        noSfcPlacementSolver.addTransitFlowConservation(model);
-        noSfcPlacementSolver.addDelayConstraints(model);
+        topoSyncPlacementSolver.addDecisionVariableConnectionConstraints(model);
+        topoSyncPlacementSolver.addSourceFlowConservation(model);
+        topoSyncPlacementSolver.addDestinationFlowConservation(model);
+        topoSyncPlacementSolver.addTransitFlowConservation(model);
+        topoSyncPlacementSolver.addDelayConstraints(model);
         if (goal != OptimizationGoal.SPT) {
-            noSfcPlacementSolver.addInDegreeLessEqualOneConstraint(model);
-            noSfcPlacementSolver.addMTZConstraints(model);
+            topoSyncPlacementSolver.addInDegreeLessEqualOneConstraint(model);
+            topoSyncPlacementSolver.addMTZConstraints(model);
         }
     }
 
@@ -933,14 +933,14 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
         for (NprTraffic noSfcFlow : trafficNoSfc) {
             print(noSfcFlow.toString());
-            print("max delay:" + noSfcPlacementSolver.getMaxDelayForFlow(noSfcFlow).get(GRB.DoubleAttr.X));
-            print("min delay:" + noSfcPlacementSolver.getMinDelayForFlow(noSfcFlow).get(GRB.DoubleAttr.X));
+            print("max delay:" + topoSyncPlacementSolver.getMaxDelayForFlow(noSfcFlow).get(GRB.DoubleAttr.X));
+            print("min delay:" + topoSyncPlacementSolver.getMinDelayForFlow(noSfcFlow).get(GRB.DoubleAttr.X));
 
 
-            double maxDelayOfFlow = Math.round(noSfcPlacementSolver.getMaxDelayForFlow(noSfcFlow)
-                                                                   .get(GRB.DoubleAttr.X));
-            double minDelayOfFlow = Math.round(noSfcPlacementSolver.getMinDelayForFlow(noSfcFlow)
-                                                                   .get(GRB.DoubleAttr.X));
+            double maxDelayOfFlow = Math.round(topoSyncPlacementSolver.getMaxDelayForFlow(noSfcFlow)
+                                                                      .get(GRB.DoubleAttr.X));
+            double minDelayOfFlow = Math.round(topoSyncPlacementSolver.getMinDelayForFlow(noSfcFlow)
+                                                                      .get(GRB.DoubleAttr.X));
             maxDelayPerFlow.put(noSfcFlow, maxDelayOfFlow);
             deviationPerFlow.put(noSfcFlow, maxDelayOfFlow - minDelayOfFlow);
             deviationSum += maxDelayOfFlow;
@@ -951,14 +951,14 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
 
             delays.put(noSfcFlow, new HashMap<>());
             for (TopologyVertex dst : noSfcFlow.getEgressNodes()) {
-                final double delay = noSfcPlacementSolver.getDelayForFlowAndDestination(noSfcFlow, dst)
-                                                         .get(GRB.DoubleAttr.X);
+                final double delay = topoSyncPlacementSolver.getDelayForFlowAndDestination(noSfcFlow, dst)
+                                                            .get(GRB.DoubleAttr.X);
                 delays.get(noSfcFlow).put(dst, delay);
                 print("delay for " + dst.toString() + ":" + delay);
             }
             Set<TopologyEdge> edgesForTraffic = new HashSet<>();
             for (TopologyEdge edge : edges) {
-                GRBVar var = noSfcPlacementSolver.getIsEdgeUsedAtAllForFlow(noSfcFlow, edge);
+                GRBVar var = topoSyncPlacementSolver.getIsEdgeUsedAtAllForFlow(noSfcFlow, edge);
                 double varValue = Math.round(var.get(GRB.DoubleAttr.X));
                 if (varValue != 0) {
                     print("    " + var.get(GRB.StringAttr.VarName) + "=" + varValue);

@@ -5,25 +5,13 @@ import org.onosproject.core.ApplicationId;
 import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.Link;
-import org.onosproject.net.flow.DefaultFlowRule;
-import org.onosproject.net.flow.DefaultTrafficSelector;
-import org.onosproject.net.flow.DefaultTrafficTreatment;
-import org.onosproject.net.flow.FlowRule;
-import org.onosproject.net.flow.FlowRuleService;
-import org.onosproject.net.flow.TrafficSelector;
-import org.onosproject.net.flow.TrafficTreatment;
+import org.onosproject.net.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesiscode.common.group.IGroupMember;
 import thesiscode.common.tree.NFVPerSourceTree;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DefaultNfvTreeFlowPusher extends DefaultPerSourceTreeFlowPusher implements INfvTreeFlowPusher {
@@ -156,32 +144,6 @@ public class DefaultNfvTreeFlowPusher extends DefaultPerSourceTreeFlowPusher imp
                 installed.add(fr);
             }
         }
-
-
-        // divide links into a set of links whose source is the VNF switch and residual
-        /*Set<DeviceId> vnfDeviceIds = tree.getVnfConnectPoints()
-                                         .stream()
-                                         .map(ConnectPoint::deviceId)
-                                         .collect(Collectors.toSet());
-        Set<Link> linksFromVnfSwitch = new HashSet<>();
-        Set<Link> residualLinks = new HashSet<>();
-
-        for (Link link : tree.getLinks()) {
-            if (vnfDeviceIds.contains(link.src().deviceId())) {
-                linksFromVnfSwitch.add(link);
-            } else {
-                residualLinks.add(link);
-            }
-        }
-
-        // push "residual tree" like usual
-        IPerSourceTree residualTree = new DefaultPerSourceTree(tree.getSource(), residualLinks, tree.getReceivers());
-        log.info("start pushing residual tree");
-        super.pushTree(residualTree);
-        log.info("finished pushing residual tree");*/
-
-        // push rules for VNF
-        //pushVnfRules(tree, linksFromVnfSwitch);
     }
 
     private Map<DeviceId, Set<Link>> getOutgoingLinksForDevices(Set<Link> links) {
@@ -201,48 +163,6 @@ public class DefaultNfvTreeFlowPusher extends DefaultPerSourceTreeFlowPusher imp
         }
         return ingoing;
     }
-
-    /*private void pushVnfRules(NFVPerSourceTree tree, Set<Link> linksFromVnfSwitch) {
-        Set<ConnectPoint> vnfCps = tree.getVnfConnectPoints();
-        log.info("vnfCps: {}, linksFromVnfSwitch: {}", vnfCps, linksFromVnfSwitch);
-
-        Set<FlowRule> flowRules = new HashSet<>();
-        for (ConnectPoint cp : vnfCps) {
-            // redirect group traffic to VNF
-            flowRules.add(DefaultFlowRule.builder()
-                                         .forDevice(cp.deviceId())
-                                         .fromApp(appId)
-                                         .withPriority(FlowRule.MAX_PRIORITY - 1)
-                                         .withSelector(tree.getSelector())
-                                         .withTreatment(DefaultTrafficTreatment.builder()
-                                                                               .setOutput(cp.port())
-                                                                               .transition(1)
-                                                                               .build())
-                                         .makePermanent()
-                                         .forTable(0)
-                                         .build());
-
-            // redirect processed traffic from VNF according to tree
-            flowRules.add(DefaultFlowRule.builder()
-                                         .forDevice(cp.deviceId())
-                                         .fromApp(appId)
-                                         .withPriority(FlowRule.MAX_PRIORITY)
-                                         .withSelector(DefaultTrafficSelector.builder(tree.getSelector())
-                                                                             .matchInPort(cp.port())
-                                                                             .build())
-                                         .withTreatment(getTreatmentFromVnfToTree(cp.deviceId(), linksFromVnfSwitch))
-                                         .makePermanent()
-                                         .forTable(0)
-                                         .build());
-        }
-
-
-        for (FlowRule fr : flowRules) {
-            installed.add(fr);
-            log.info("adding VNF flow rule: {}", fr);
-        }
-        flowRuleService.applyFlowRules(flowRules.toArray(new FlowRule[0]));
-    }*/
 
     /**
      * Filters the list of links so that the result only contains links whose src device id equals id. Then builds a

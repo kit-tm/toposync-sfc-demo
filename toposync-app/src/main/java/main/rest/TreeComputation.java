@@ -10,7 +10,7 @@ import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
 import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import thesiscode.common.nfv.placement.solver.mfcp.used.RefSfcPlacementSolver;
 import thesiscode.common.nfv.placement.solver.mfcp.used.SfcPlacementSolver;
-import thesiscode.common.nfv.placement.solver.mfcp.used.TPLSfcPlacementSolver;
+import thesiscode.common.nfv.placement.solver.mfcp.used.TopoSyncSFCPlacementSolver;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -64,7 +64,7 @@ public class TreeComputation {
     private NfvPlacementSolution computeTopoSyncTree() {
         NfvPlacementRequest request = requestGenerator.createRequest();
 
-        SfcPlacementSolver solver = new TPLSfcPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION, true,
+        SfcPlacementSolver solver = new TopoSyncSFCPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION, true,
                 env, ALPHA);
 
         NfvPlacementSolution solution = solver.solve(request);

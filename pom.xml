@@ -18,7 +18,6 @@
     <modules>
         <module>toposync-demo-gui</module>
         <module>common</module>
-        <module>groupcom</module>
         <module>nfv</module>
         <module>toposync-app</module>
     </modules>
