@@ -44,6 +44,7 @@ public class SolutionInstaller {
 
     public void installSolution(NfvPlacementSolution solution) {
         this.solution = solution;
+        // TODO uninstall old solution
         Map<NprNfvTypes.Type, Set<ConnectPoint>> vnfConnectPoints = placeVNFs();
         pushFlows(vnfConnectPoints);
     }
@@ -79,6 +80,7 @@ public class SolutionInstaller {
                                                       .next());
         Set<IGroupMember> dsts = new HashSet<>();
         dsts.add(new WrappedHost(hostService.getHostsByIp(ClientServerLocator.CLIENT_1_ADDRESS).iterator().next()));
+        dsts.add(new WrappedHost(hostService.getHostsByIp(ClientServerLocator.CLIENT_2_ADDRESS).iterator().next()));
 
         final NprTraffic traffic = solution.getRequest().getTraffic().get(0);
 
