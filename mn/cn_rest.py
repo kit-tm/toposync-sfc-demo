@@ -41,10 +41,10 @@ class CnRESTRequestHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
         # start sniffer on docker host
         cmd_string = ""
         if vnf_type.endswith("_accelerated"):
-            cmd_string = "python /home/felix/Desktop/ba/code/mn/hosts/cli/RAW/Sniffer.py %s %s %s &" % ((host_name + '-eth0'), 100, vnf_type)
+            cmd_string = "python /home/felix/Desktop/toposync/mn/Sniffer.py %s %s %s &" % ((host_name + '-eth0'), 100, vnf_type)
             print("starting sniffer: %s: %s" % (host_name, cmd_string))
         else:
-            cmd_string = "python /home/felix/Desktop/ba/code/mn/hosts/cli/RAW/Sniffer.py %s %s %s &" % ((host_name + '-eth0'), 400, vnf_type)
+            cmd_string = "python /home/felix/Desktop/toposync/mn/Sniffer.py %s %s %s &" % ((host_name + '-eth0'), 400, vnf_type)
             print("starting sniffer: %s: %s" % (host_name, cmd_string))
         
         vnf_docker_host.cmd(cmd_string)
