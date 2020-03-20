@@ -14,7 +14,8 @@ import org.onosproject.net.host.HostService;
 import org.onosproject.net.topology.TopologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thesiscode.common.flow.DefaultNfvTreeFlowPusher;
+import thesiscode.common.flow.BidirectionalNfvTreeFlowPusher;
+import thesiscode.common.flow.INfvTreeFlowPusher;
 import thesiscode.common.nfv.placement.deploy.NfvInstantiator;
 
 import java.io.IOException;
@@ -70,8 +71,9 @@ public class TopoSyncMain {
 
     private void setUpRESTServer() {
         RequestGenerator requestGenerator = new RequestGenerator(clientServerLocator, topoService);
-        SolutionInstaller installer = new SolutionInstaller(new DefaultNfvTreeFlowPusher(appId, flowRuleService),
-                new NfvInstantiator(), deviceService, hostService);
+        INfvTreeFlowPusher pusher = new BidirectionalNfvTreeFlowPusher(appId, flowRuleService);
+        NfvInstantiator instantiator = new NfvInstantiator();
+        SolutionInstaller installer = new SolutionInstaller(pusher, instantiator, deviceService, hostService);
 
         try {
             serverREST = HttpServer.create(new InetSocketAddress("localhost", 9355), 0);

@@ -25,8 +25,6 @@ public class DefaultNfvTreeFlowPusher extends NfvTreeFlowPusher {
 
     @Override
     protected void installFlows(DeviceId device, int logicalEdge, ConnectPoint inCp, Set<ConnectPoint> outCps) {
-        TrafficSelector sel = match(device, inCp, logicalEdge);
-
         IGroupMember receiverAtSwitch = null;
         for (IGroupMember receiver : tree.getReceivers()) {
             if (receiver.getConnectPoint().deviceId().equals(device)) {
@@ -34,35 +32,7 @@ public class DefaultNfvTreeFlowPusher extends NfvTreeFlowPusher {
             }
         }
 
-        TrafficTreatment.Builder treatBuild = DefaultTrafficTreatment.builder();
-        final boolean isSourceSwitch = device.equals(tree.getSource().getConnectPoint().deviceId());
-        if (isSourceSwitch) {
-            treatBuild.setEthDst(MacAddress.valueOf("11:11:11:11:11:11"));
-        }
-
-        if (receiverAtSwitch != null) {
-            treatBuild.transition(1).deferred().setEthDst(receiverAtSwitch.getMacAddress());
-        } else {
-            for (ConnectPoint cp : outCps) {
-                treatBuild.setOutput(cp.port());
-            }
-        }
-
-        TrafficTreatment treat = treatBuild.build();
-
-        FlowRule fr = DefaultFlowRule.builder()
-                                     .forDevice(device)
-                                     .withSelector(sel)
-                                     .withTreatment(treat)
-                                     .makePermanent()
-                                     .withPriority(FlowRule.MAX_PRIORITY)
-                                     .forTable(0)
-                                     .fromApp(appId)
-                                     .build();
-
-        log.info("adding VNF flow rule: {}", fr);
-        flowRuleService.applyFlowRules(fr);
-        installed.add(fr);
+        firstRule(logicalEdge, device, receiverAtSwitch, inCp, outCps);
 
         if (receiverAtSwitch != null) {
             secondRule(device, receiverAtSwitch);
@@ -70,28 +40,31 @@ public class DefaultNfvTreeFlowPusher extends NfvTreeFlowPusher {
         }
     }
 
-    private void thirdRule(DeviceId device, Set<ConnectPoint> outCps) {
-        TrafficTreatment.Builder treatBuild = DefaultTrafficTreatment.builder().deferred();
-        for (ConnectPoint cp : outCps) {
-            treatBuild.setOutput(cp.port());
+    private void firstRule(int logicalEdge, DeviceId currentSwitch, IGroupMember receiver, ConnectPoint inCp,
+                           Set<ConnectPoint> outCps) {
+        TrafficSelector.Builder selBuild = DefaultTrafficSelector.builder(tree.getSelector()).matchInPort(inCp.port());
+        if (!currentSwitch.equals(tree.getSource().getConnectPoint().deviceId())) {
+            String macString = macString(logicalEdge);
+            selBuild.matchEthDst(MacAddress.valueOf(macString));
+        }
+        TrafficSelector sel = selBuild.build();
+
+
+        TrafficTreatment.Builder treatBuild = DefaultTrafficTreatment.builder();
+        final boolean isSourceSwitch = currentSwitch.equals(tree.getSource().getConnectPoint().deviceId());
+        if (isSourceSwitch) {
+            treatBuild.setEthDst(MacAddress.valueOf("11:11:11:11:11:11"));
+        }
+        if (receiver != null) {
+            treatBuild.transition(1).deferred().setEthDst(receiver.getMacAddress());
+        } else {
+            for (ConnectPoint cp : outCps) {
+                treatBuild.setOutput(cp.port());
+            }
         }
         TrafficTreatment treat = treatBuild.build();
 
-        TrafficSelector sel = DefaultTrafficSelector.builder().matchEthType(Ethernet.TYPE_IPV4).build();
-
-        FlowRule fr = DefaultFlowRule.builder()
-                                     .forDevice(device)
-                                     .withSelector(sel)
-                                     .withTreatment(treat)
-                                     .makePermanent()
-                                     .withPriority(FlowRule.MAX_PRIORITY)
-                                     .forTable(2)
-                                     .fromApp(appId)
-                                     .build();
-
-        log.info("adding third-table VNF flow rule: {}", fr);
-        flowRuleService.applyFlowRules(fr);
-        installed.add(fr);
+        install(sel, treat, currentSwitch, 0);
     }
 
     private void secondRule(DeviceId currentSwitch, IGroupMember receiver) {
@@ -103,30 +76,19 @@ public class DefaultNfvTreeFlowPusher extends NfvTreeFlowPusher {
                                                         .setIpDst(receiver.getIpAddress())
                                                         .build();
 
-
-        FlowRule fr = DefaultFlowRule.builder()
-                                     .forDevice(currentSwitch)
-                                     .withSelector(sel)
-                                     .withTreatment(treat)
-                                     .makePermanent()
-                                     .withPriority(FlowRule.MAX_PRIORITY)
-                                     .forTable(1)
-                                     .fromApp(appId)
-                                     .build();
-
-        log.info("adding second-table VNF flow rule: {}", fr);
-        flowRuleService.applyFlowRules(fr);
-        installed.add(fr);
+        install(sel, treat, currentSwitch, 1);
     }
 
-    private TrafficSelector match(DeviceId currentSwitch, ConnectPoint inCp, int logicalEdge) {
-        TrafficSelector.Builder selBuild = DefaultTrafficSelector.builder(tree.getSelector()).matchInPort(inCp.port());
-
-        if (!currentSwitch.equals(tree.getSource().getConnectPoint().deviceId())) {
-            String macString = macString(logicalEdge);
-            selBuild.matchEthDst(MacAddress.valueOf(macString));
+    private void thirdRule(DeviceId device, Set<ConnectPoint> outCps) {
+        TrafficTreatment.Builder treatBuild = DefaultTrafficTreatment.builder().deferred();
+        for (ConnectPoint cp : outCps) {
+            treatBuild.setOutput(cp.port());
         }
-        return selBuild.build();
+        TrafficTreatment treat = treatBuild.build();
+
+        TrafficSelector sel = DefaultTrafficSelector.builder().matchEthType(Ethernet.TYPE_IPV4).build();
+
+        install(sel, treat, device, 2);
     }
 
     /**

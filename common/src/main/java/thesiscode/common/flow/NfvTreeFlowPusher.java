@@ -4,8 +4,7 @@ import org.onosproject.core.ApplicationId;
 import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.DeviceId;
 import org.onosproject.net.Link;
-import org.onosproject.net.flow.FlowRule;
-import org.onosproject.net.flow.FlowRuleService;
+import org.onosproject.net.flow.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import thesiscode.common.group.IGroupMember;
@@ -153,4 +152,20 @@ public abstract class NfvTreeFlowPusher implements INfvTreeFlowPusher {
         return outCps;
     }
 
+    protected void install(TrafficSelector sel, TrafficTreatment treat, DeviceId deviceId, int table) {
+        FlowRule fr = DefaultFlowRule.builder()
+                                     .forDevice(deviceId)
+                                     .withSelector(sel)
+                                     .withTreatment(treat)
+                                     .makePermanent()
+                                     .withPriority(FlowRule.MAX_PRIORITY)
+                                     .forTable(table)
+                                     .fromApp(appId)
+                                     .build();
+
+
+        log.info("adding VNF flow rule in table {}: {}", table, fr);
+        flowRuleService.applyFlowRules(fr);
+        installed.add(fr);
+    }
 }

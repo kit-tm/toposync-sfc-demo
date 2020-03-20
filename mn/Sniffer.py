@@ -79,29 +79,42 @@ while True:
         if args.v:
             print('IP[Proto: %s, Src: %s, Dst: %s, ttl: %s]' % (hex(protocol), s_addr, d_addr, ttl))
 
-        if ipaddress.IPv4Address(iph[9]).is_multicast: 
-            # ttl 42 are packets sent Transcoder, ttl 43 sent by intrusion detection -> ignore packets sent by "us" -> avoid processing packets several times if looped back to the VNF
-            if( ((args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated") and ttl != 42) or  args.name == "INTRUSION_DETECTION" and ttl != 43): 
-                
-                print("from receive to before send: %s" % (int(round(time.time() * 1000)) - reception_time))
-                ether_dst = ""
-                ttl = 0
-                if args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated":
-                    ether_dst = "22:22:22:22:22:22"
-                    ttl = 42
-                elif args.name == "INTRUSION_DETECTION":
-                    ether_dst = "33:33:33:33:33:33"
-                    ttl = 43
+        # ttl 42 are packets sent Transcoder, ttl 43 sent by intrusion detection -> ignore packets sent by "us" -> avoid processing packets several times if looped back to the VNF
+        if( ((args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated") and ttl == 42) or  args.name == "INTRUSION_DETECTION" and ttl == 43): 
+            continue
+            
 
-                pkt = Ether(dst=ether_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl)/Raw(load=ip_data)
-                before_send = int(round(time.time() * 1000))
-                if before_send - reception_time >= args.delay: # if delay by unpacking the packet already exceeds the delay, instantly send the packet back
-                    print("sending packet right away")
-                    scapy_sock.send(pkt)
-                else:
-                    print("scheduling sending for in %s seconds." % str((args.delay - (before_send - reception_time)) / 1000.0))
-                    t = threading.Timer((args.delay - (before_send - reception_time)) / 1000.0, debug_send, args=[pkt])
-                    t.start()
+        ip_dst = ipaddress.IPv4Address(iph[9])
+
+        if str(ip_dst) == "10.0.0.1": # ping from receiver back to source
+            print("directly forwarding reverse ping")
+            if args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated":
+                ttl = 42
+            elif args.name == "INTRUSION_DETECTION":
+                ttl = 43
+            pkt = Ether(dst=eth_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl)/Raw(load=ip_data)
+            scapy_sock.send(pkt)
+
+        if ip_dst.is_multicast:     
+            print("from receive to before send: %s" % (int(round(time.time() * 1000)) - reception_time))
+            ether_dst = ""
+            ttl = 0
+            if args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated":
+                ether_dst = "22:22:22:22:22:22"
+                ttl = 42
+            elif args.name == "INTRUSION_DETECTION":
+                ether_dst = "33:33:33:33:33:33"
+                ttl = 43
+
+            pkt = Ether(dst=ether_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl)/Raw(load=ip_data)
+            before_send = int(round(time.time() * 1000))
+            if before_send - reception_time >= args.delay: # if delay by unpacking the packet already exceeds the delay, instantly send the packet back
+                print("sending packet right away")
+                scapy_sock.send(pkt)
+            else:
+                print("scheduling sending for in %s seconds." % str((args.delay - (before_send - reception_time)) / 1000.0))
+                t = threading.Timer((args.delay - (before_send - reception_time)) / 1000.0, debug_send, args=[pkt])
+                t.start()
 
         ## UDP
         elif protocol == 17:
