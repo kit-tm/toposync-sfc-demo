@@ -33,7 +33,6 @@ public class SolutionInstaller {
     private DeviceService deviceService;
     private HostService hostService;
 
-
     public SolutionInstaller(INfvTreeFlowPusher flowPusher, NfvInstantiator instantiator, DeviceService deviceService
             , HostService hostService) {
         this.flowPusher = flowPusher;
@@ -43,10 +42,17 @@ public class SolutionInstaller {
     }
 
     public void installSolution(NfvPlacementSolution solution) {
+        uninstallOldSolution();
         this.solution = solution;
-        // TODO uninstall old solution
         Map<NprNfvTypes.Type, Set<ConnectPoint>> vnfConnectPoints = placeVNFs();
         pushFlows(vnfConnectPoints);
+    }
+
+    private void uninstallOldSolution() {
+        if (solution != null) {
+            flowPusher.deleteFlows();
+            // TODO remove VNFs
+        }
     }
 
     private Map<NprNfvTypes.Type, Set<ConnectPoint>> placeVNFs() {

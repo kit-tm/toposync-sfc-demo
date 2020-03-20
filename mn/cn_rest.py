@@ -8,6 +8,9 @@ class CnRESTRequestHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
                             "TRANSCODER_accelerated":"own_test_container:ubuntu1804",
                             "INTRUSION_DETECTION_accelerated": "own_test_container:ubuntu1804",}
 
+
+    # TODO delete
+
     def do_PUT(self):
         print("cn_net: %s" % self.cn_net)
         print("self.path: %s" % self.path)

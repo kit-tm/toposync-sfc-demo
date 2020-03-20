@@ -3,7 +3,6 @@ package thesiscode.common.nfv.traffic;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO as classes?
 public class NprNfvTypes {
 
     public enum Type {
