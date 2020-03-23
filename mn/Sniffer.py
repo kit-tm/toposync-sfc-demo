@@ -37,7 +37,8 @@ def sleep(time_in_ms):
 scapy_sock = conf.L2socket(iface=args.iface)
 
 def debug_send(pkt):
-    print ("sending now!")
+    if args.v:
+        print ("sending now!")
     scapy_sock.send(pkt)
 
 while True:
@@ -61,7 +62,7 @@ while True:
     if eth_type == 0x0800: # IPv4
         ip_header = packet[eth_length:20+eth_length]
 
-        ip_data = packet[21+eth_length:]
+        ip_data = packet[20+eth_length:]
 
         iph = unpack('!BBHHHBBH4s4s' , ip_header)
 
@@ -87,16 +88,16 @@ while True:
         ip_dst = ipaddress.IPv4Address(iph[9])
 
         if str(ip_dst) == "10.0.0.1": # ping from receiver back to source
-            print("directly forwarding reverse ping")
+            #print("directly forwarding reverse ping")
             if args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated":
                 ttl = 42
             elif args.name == "INTRUSION_DETECTION":
                 ttl = 43
-            pkt = Ether(dst=eth_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl)/Raw(load=ip_data)
+            pkt = Ether(dst=eth_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl, proto=protocol)/Raw(load=ip_data)
             scapy_sock.send(pkt)
 
         if ip_dst.is_multicast:     
-            print("from receive to before send: %s" % (int(round(time.time() * 1000)) - reception_time))
+            #print("from receive to before send: %s" % (int(round(time.time() * 1000)) - reception_time))
             ether_dst = ""
             ttl = 0
             if args.name == "TRANSCODER" or args.name == "TRANSCODER_accelerated":
@@ -106,13 +107,13 @@ while True:
                 ether_dst = "33:33:33:33:33:33"
                 ttl = 43
 
-            pkt = Ether(dst=ether_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl)/Raw(load=ip_data)
+            pkt = Ether(dst=ether_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl, proto=protocol)/Raw(load=ip_data)
             before_send = int(round(time.time() * 1000))
             if before_send - reception_time >= args.delay: # if delay by unpacking the packet already exceeds the delay, instantly send the packet back
-                print("sending packet right away")
+                #print("sending packet right away")
                 scapy_sock.send(pkt)
             else:
-                print("scheduling sending for in %s seconds." % str((args.delay - (before_send - reception_time)) / 1000.0))
+                #print("scheduling sending for in %s seconds." % str((args.delay - (before_send - reception_time)) / 1000.0))
                 t = threading.Timer((args.delay - (before_send - reception_time)) / 1000.0, debug_send, args=[pkt])
                 t.start()
 
@@ -140,4 +141,5 @@ while True:
 
         # protocol other than UDP
         else :
-            print('unhandled IP protocol: ' + str(protocol))
+            if args.v:
+                print('unhandled IP protocol: ' + str(protocol))
