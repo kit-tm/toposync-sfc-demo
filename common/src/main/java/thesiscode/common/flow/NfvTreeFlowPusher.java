@@ -45,6 +45,7 @@ public abstract class NfvTreeFlowPusher implements INfvTreeFlowPusher {
 
 
         for (int logicalEdge = 0; logicalEdge < tree.getLinks().size(); logicalEdge++) {
+            log.info("### LOGICAL EDGE {} ###", logicalEdge);
             Set<Link> linkForLogical = tree.getLinks().get(logicalEdge);
             Map<DeviceId, Set<Link>> outLinksPerDevice = groupByOutgoing(linkForLogical);
             Map<DeviceId, Set<Link>> inLinksPerDevice = groupByIngoing(linkForLogical);
@@ -52,6 +53,14 @@ public abstract class NfvTreeFlowPusher implements INfvTreeFlowPusher {
             Set<DeviceId> allInvolvedDevices = new HashSet<>();
             allInvolvedDevices.addAll(inLinksPerDevice.keySet());
             allInvolvedDevices.addAll(outLinksPerDevice.keySet());
+
+            final boolean vnfAtSourceSwitch = (logicalEdge == 0) && (allInvolvedDevices.size() == 0);
+
+            if (vnfAtSourceSwitch) {
+                final ConnectPoint sourceCp = tree.getSource().getConnectPoint();
+                log.info("VNF is placed at source switch, installing special rule");
+                installFlows(sourceCp.deviceId(), 0, sourceCp, tree.getVnfConnectPoints().get(logicalEdge));
+            }
 
             for (DeviceId device : allInvolvedDevices) {
                 ConnectPoint inCp = inCp(device, inLinksPerDevice.get(device), logicalEdge);
@@ -91,23 +100,28 @@ public abstract class NfvTreeFlowPusher implements INfvTreeFlowPusher {
      * @return the connect point to use as in match
      */
     private ConnectPoint inCp(DeviceId currentSwitch, Set<Link> inLinks, int logicalEdge) {
-        final boolean isSourceSwitch = currentSwitch.equals(tree.getSource().getConnectPoint().deviceId());
+        ConnectPoint inCp = null;
 
-        ConnectPoint inCp;
+        final boolean hostIsSource = (inLinks == null);
 
-        if (isSourceSwitch) {
-            // first switch (where source host is attached to)
-            inCp = tree.getSource().getConnectPoint();
-        } else {
-            if (inLinks == null) {
-                // was null because device is VNF source
-                log.info("current device is VNF source: {}", currentSwitch.toString());
+        log.info("calculating inCp for {}", currentSwitch);
+
+        if (hostIsSource) {
+            if (logicalEdge != 0) {
+                log.info("currently looking at VNF->switch: {}", currentSwitch.toString());
                 inCp = tree.getVnfConnectPoints().get(logicalEdge - 1).iterator().next();
             } else {
-                log.info("current device is intermediate: {}", currentSwitch.toString());
-                inCp = inLinks.iterator().next().dst();
+                final boolean isSourceSwitch = currentSwitch.equals(tree.getSource().getConnectPoint().deviceId());
+                if (isSourceSwitch) {
+                    log.info("currently looking at src->switch: {}", currentSwitch.toString());
+                    inCp = tree.getSource().getConnectPoint();
+                }
             }
+        } else {
+            log.info("device is intermediate: {}", currentSwitch.toString());
+            inCp = inLinks.iterator().next().dst();
         }
+
         log.info("inCP: {}", inCp);
         return inCp;
     }
@@ -127,8 +141,8 @@ public abstract class NfvTreeFlowPusher implements INfvTreeFlowPusher {
             for (ConnectPoint vnfCp : tree.getVnfConnectPoints().get(logicalEdge)) {
                 if (vnfCp.deviceId().equals(currentSwitch)) {
                     // at current device, VNF is attached
-                    outCps = new HashSet<>();
                     outCps.add(vnfCp);
+                    log.info("added VNF port: {}", vnfCp);
                 }
             }
         }
@@ -140,8 +154,6 @@ public abstract class NfvTreeFlowPusher implements INfvTreeFlowPusher {
 
         if (logicalEdge == (tree.getLinks().size() - 1)) {
             for (IGroupMember dst : tree.getReceivers()) {
-                log.info("dst: {}", dst.getIpAddress());
-                log.info("dst.cp.devId: {}", dst.getConnectPoint().deviceId());
                 if (currentSwitch.equals(dst.getConnectPoint().deviceId())) {
                     outCps.add(dst.getConnectPoint());
                 }

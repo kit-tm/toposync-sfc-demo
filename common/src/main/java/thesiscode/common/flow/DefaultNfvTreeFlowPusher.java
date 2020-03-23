@@ -42,8 +42,10 @@ public class DefaultNfvTreeFlowPusher extends NfvTreeFlowPusher {
 
     private void firstRule(int logicalEdge, DeviceId currentSwitch, IGroupMember receiver, ConnectPoint inCp,
                            Set<ConnectPoint> outCps) {
+        final boolean isSourceSwitch = currentSwitch.equals(tree.getSource().getConnectPoint().deviceId());
+
         TrafficSelector.Builder selBuild = DefaultTrafficSelector.builder(tree.getSelector()).matchInPort(inCp.port());
-        if (!currentSwitch.equals(tree.getSource().getConnectPoint().deviceId())) {
+        if (!isSourceSwitch || (logicalEdge != 0)) {
             String macString = macString(logicalEdge);
             selBuild.matchEthDst(MacAddress.valueOf(macString));
         }
@@ -51,8 +53,7 @@ public class DefaultNfvTreeFlowPusher extends NfvTreeFlowPusher {
 
 
         TrafficTreatment.Builder treatBuild = DefaultTrafficTreatment.builder();
-        final boolean isSourceSwitch = currentSwitch.equals(tree.getSource().getConnectPoint().deviceId());
-        if (isSourceSwitch) {
+        if (isSourceSwitch && (logicalEdge == 0)) {
             treatBuild.setEthDst(MacAddress.valueOf("11:11:11:11:11:11"));
         }
         if (receiver != null) {
