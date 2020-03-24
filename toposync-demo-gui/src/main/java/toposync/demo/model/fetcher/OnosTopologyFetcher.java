@@ -8,10 +8,15 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 public class OnosTopologyFetcher implements TopologyFetcher {
     private static final String LINK_FETCH_URL = "http://localhost:8181/onos/v1/links";
@@ -35,8 +40,8 @@ public class OnosTopologyFetcher implements TopologyFetcher {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         String authString = "karaf:karaf";
-        con.setRequestProperty("Authorization",
-                               "Basic " + new String(Base64.getEncoder().encode(authString.getBytes())));
+        con.setRequestProperty("Authorization", "Basic " + new String(Base64.getEncoder()
+                                                                            .encode(authString.getBytes())));
 
         InputStream inputStream = con.getInputStream();
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
@@ -112,7 +117,11 @@ public class OnosTopologyFetcher implements TopologyFetcher {
                 logger.debug("Setting ui.class and label server");
             } else {
                 hostNode.setAttribute("ui.class", "client");
-                hostNode.setAttribute("ui.label", "client");
+                if (ip.equals("10.0.0.10")) {
+                    hostNode.setAttribute("ui.label", "client1");
+                } else if (ip.equals("10.0.0.11")) {
+                    hostNode.setAttribute("ui.label", "client2");
+                }
                 logger.debug("Setting ui.class and label client");
             }
 
