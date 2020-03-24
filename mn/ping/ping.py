@@ -1,5 +1,9 @@
 import subprocess
 import re
+import os
+
+DIR_NAME = os.path.dirname(__file__)
+CSV_PATH = '%s/ping_data.csv' % DIR_NAME
 
 def run_command(command):
     p = subprocess.Popen(command,
@@ -7,6 +11,7 @@ def run_command(command):
                          stderr=subprocess.STDOUT,
                          shell=True)
     return iter(p.stdout.readline, b'')
+
 
 source_regex = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
 seq_regex = r'icmp_seq=\d*'
@@ -17,8 +22,8 @@ time_regex = r'time=\d*'
 time_10 = None
 time_11 = None
 
-f = open('ping_data.csv', 'w').close()
-f = open('ping_data.csv', 'a')
+f = open(CSV_PATH, 'w').close()
+f = open(CSV_PATH, 'a')
 
 cnt = 0
 
