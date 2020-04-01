@@ -48,10 +48,13 @@ public class DemoUI extends JFrame implements GUI {
     }
 
     private void initRefreshButton() {
-        JButton refresh = new JButton("Refresh Topology");
+        JButton refresh = new JButton("Refresh");
         refresh.setAlignmentX(Component.CENTER_ALIGNMENT);
         contentPane.add(refresh);
-        refresh.addActionListener(e -> controller.fetchTopology());
+        refresh.addActionListener(e -> {
+            controller.fetchTopology();
+            controller.fetchCurrentTree();
+        });
     }
 
     private void initTreeComputationPane() {
@@ -73,12 +76,14 @@ public class DemoUI extends JFrame implements GUI {
     public void topoSyncFetched() {
         treeComputationPane.disableTopoSync();
         treeComputationPane.enableShortestPath();
+        treeComputationPane.setStatus("TopoSync-SFC tree installed", false);
     }
 
     @Override
     public void shortestPathFetched() {
         treeComputationPane.disableShortestPath();
         treeComputationPane.enableTopoSync();
+        treeComputationPane.setStatus("Shortest-Path-SFC tree installed", false);
     }
 
     @Override
