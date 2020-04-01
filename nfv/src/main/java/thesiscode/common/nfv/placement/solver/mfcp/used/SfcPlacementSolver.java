@@ -429,7 +429,8 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
                 // no sfc case
                 for (NprTraffic flow : trafficNoSfc) {
                     for (TopologyEdge edge : edges) {
-                        objExpr.addTerm(flow.getDemand(), topoSyncPlacementSolver.getIsEdgeUsedAtAllForFlow(flow, edge));
+                        objExpr.addTerm(flow.getDemand(), topoSyncPlacementSolver.getIsEdgeUsedAtAllForFlow(flow,
+                                edge));
                     }
                 }
                 // sfc case
@@ -1080,9 +1081,10 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
             flowCnt++;
         }
 
+
         NfvPlacementSolution sol = new NfvPlacementSolution(solutionEdges, placements, req, goal,
                 model.get(GRB.DoubleAttr.ObjVal), deviationSum, delaySum, networkLoad, deviationPerFlow,
-                maxDelayPerFlow);
+                maxDelayPerFlow, getType());
         for (NprTraffic flow : logicalToRealEdgesForTraffics.keySet()) {
             sol.setLogicalEdgesForTraffic(flow, logicalToRealEdgesForTraffics.get(flow));
         }
@@ -1092,7 +1094,10 @@ public abstract class SfcPlacementSolver extends AbstractNfvIlpPlacementSolver {
         return sol;
     }
 
+    protected abstract NfvPlacementSolution.SolutionType getType();
+
     @Override
+
     protected void print(String toPrint) {
         if (verbose) {
             if (log != null) {

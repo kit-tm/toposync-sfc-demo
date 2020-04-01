@@ -21,10 +21,12 @@ import java.util.Map;
 public class OnosTreeFetcher implements TreeFetcher {
     private static final URI SHORTEST_PATH_REQUEST_URI = URI.create("http://127.0.0.1:9355/tree/shortest-path-sfc");
     private static final URI TOPOSYNC_REQUEST_URI = URI.create("http://127.0.0.1:9355/tree/toposync-sfc");
+    private static final URI GET_CURRENT_TREE_URI = URI.create("http://127.0.0.1:9355/tree");
     private Logger logger = LoggerFactory.getLogger(getClass());
     private HttpClient solutionClient;
     private HttpRequest topoSyncRequest;
     private HttpRequest shortestPathRequest;
+    private HttpRequest currentTreeRequest;
     private GUI gui;
 
 
@@ -40,6 +42,13 @@ public class OnosTreeFetcher implements TreeFetcher {
                                               .uri(SHORTEST_PATH_REQUEST_URI)
                                               .POST(HttpRequest.BodyPublishers.noBody())
                                               .build();
+
+        this.currentTreeRequest = HttpRequest.newBuilder().uri(GET_CURRENT_TREE_URI).GET().build();
+    }
+
+    @Override
+    public Graph fetchCurrentTree() throws IOException, InterruptedException {
+        return sendRequest(currentTreeRequest);
     }
 
     @Override
@@ -62,14 +71,17 @@ public class OnosTreeFetcher implements TreeFetcher {
         final int respCode = response.statusCode();
         switch (respCode) {
             case HttpURLConnection.HTTP_INTERNAL_ERROR:
-                logger.info("Internal Server error..");
+                logger.info("500: Internal Server error..");
                 gui.showError(response.body());
                 return null;
             case HttpURLConnection.HTTP_OK:
-                logger.info("Computation was successful...");
+                logger.info("200: Computation was successful...");
                 JSONObject respJson = new JSONObject(response.body());
                 logger.info("solution json: {}", respJson);
                 return solutionJsonToGraph(respJson);
+            case HttpURLConnection.HTTP_NOT_FOUND:
+                logger.info("404: No solution currently installed!");
+                return null;
             default:
                 throw new IllegalStateException("Unexpected response code: " + respCode);
         }
@@ -88,6 +100,20 @@ public class OnosTreeFetcher implements TreeFetcher {
         addEdgesToGraph(g, edges);
         addPlacementsToGraph(g, placements);
         addDelaysToGraph(g, delays);
+
+        final String type = respJson.getJSONObject("solution").getString("type");
+
+        switch (type) {
+            case "TOPOSYNC_SFC":
+                gui.topoSyncFetched();
+                break;
+            case "SPT":
+                gui.shortestPathFetched();
+                break;
+            case "TOPOSYNC":
+            default:
+                throw new IllegalStateException("Unexpected solution type: " + type);
+        }
 
         return g;
     }

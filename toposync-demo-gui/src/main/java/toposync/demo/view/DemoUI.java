@@ -71,11 +71,13 @@ public class DemoUI extends JFrame implements GUI {
 
     @Override
     public void topoSyncFetched() {
+        treeComputationPane.disableTopoSync();
         treeComputationPane.enableShortestPath();
     }
 
     @Override
     public void shortestPathFetched() {
+        treeComputationPane.disableShortestPath();
         treeComputationPane.enableTopoSync();
     }
 

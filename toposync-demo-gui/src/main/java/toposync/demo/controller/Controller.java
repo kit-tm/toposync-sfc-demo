@@ -61,4 +61,18 @@ public class Controller {
             logger.error("Error when fetching spt solution.", e);
         }
     }
+
+    public void fetchCurrentTree() {
+        try {
+            Graph tree = treeFetcher.fetchCurrentTree();
+            if (tree != null) {
+                logger.info("Fetched currently installed tree with {} nodes, {} edges", tree.getNodeCount(),
+                        tree.getEdgeCount());
+                state.setSolution(tree);
+            }
+        } catch (IOException | InterruptedException e) {
+            gui.showError("Error when fetching currently installed tree.");
+            logger.error("Error when fetching currently installed tree.", e);
+        }
+    }
 }

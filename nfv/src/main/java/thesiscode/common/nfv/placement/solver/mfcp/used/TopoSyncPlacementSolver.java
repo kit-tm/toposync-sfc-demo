@@ -532,6 +532,7 @@ public class TopoSyncPlacementSolver extends AbstractNfvIlpPlacementSolver {
         }
 
         return new NfvPlacementSolution(solutionEdges, new HashMap<>(), req, goal, model.get(GRB.DoubleAttr.ObjNVal),
-                deviationSum, delaySum, networkLoad, deviationMap, maxDelayMap);
+                deviationSum, delaySum, networkLoad, deviationMap, maxDelayMap,
+                NfvPlacementSolution.SolutionType.TOPOSYNC);
     }
 }

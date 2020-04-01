@@ -100,7 +100,14 @@ public class OnosTopologyFetcher implements TopologyFetcher {
 
         for (Object current : allHosts) {
             JSONObject currentHost = (JSONObject) current;
-            String ip = currentHost.getJSONArray("ipAddresses").getString(0);
+
+            JSONArray ips = currentHost.getJSONArray("ipAddresses");
+
+            if (ips.length() != 1) {
+                logger.warn("This host has not exactly one IP, probably a VNF. Skip");
+                continue;
+            }
+            String ip = ips.getString(0);
 
             JSONObject hostLocation = currentHost.getJSONArray("locations").getJSONObject(0);
             String nodeId = hostLocation.getString("elementId");

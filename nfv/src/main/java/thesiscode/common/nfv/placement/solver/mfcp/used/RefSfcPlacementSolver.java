@@ -3,8 +3,9 @@ package thesiscode.common.nfv.placement.solver.mfcp.used;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBModel;
-import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import org.slf4j.Logger;
+import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
+import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import thesiscode.common.nfv.traffic.NprTraffic;
 
 public class RefSfcPlacementSolver extends SfcPlacementSolver {
@@ -55,5 +56,10 @@ public class RefSfcPlacementSolver extends SfcPlacementSolver {
     @Override
     protected void addInDegreeLessEqualOneConstraint(GRBModel model, NprTraffic flow, int flowIndex) throws GRBException {
         // intentionally blank
+    }
+
+    @Override
+    protected NfvPlacementSolution.SolutionType getType() {
+        return NfvPlacementSolution.SolutionType.SPT;
     }
 }

@@ -4,6 +4,7 @@ import gurobi.*;
 import org.onosproject.net.topology.TopologyEdge;
 import org.onosproject.net.topology.TopologyVertex;
 import org.slf4j.Logger;
+import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
 import thesiscode.common.nfv.placement.solver.OptimizationGoal;
 import thesiscode.common.nfv.traffic.NprTraffic;
 
@@ -139,6 +140,11 @@ public class TopoSyncSFCPlacementSolver extends SfcPlacementSolver {
                 model.addConstr(sum, GRB.LESS_EQUAL, 1.0, "");
             }
         }
+    }
+
+    @Override
+    protected NfvPlacementSolution.SolutionType getType() {
+        return NfvPlacementSolution.SolutionType.TOPOSYNC_SFC;
     }
 
 }

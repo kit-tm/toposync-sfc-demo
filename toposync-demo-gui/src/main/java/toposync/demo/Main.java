@@ -1,16 +1,16 @@
 package toposync.demo;
 
 import toposync.demo.controller.Controller;
-import toposync.demo.model.fetcher.*;
+import toposync.demo.model.fetcher.OnosTopologyFetcher;
+import toposync.demo.model.fetcher.OnosTreeFetcher;
+import toposync.demo.model.fetcher.TopologyFetcher;
+import toposync.demo.model.fetcher.TreeFetcher;
 import toposync.demo.view.DemoUI;
-
-import javax.swing.*;
-import java.io.IOException;
 
 public class Main {
 
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
+    public static void main(String[] args) {
         System.setProperty("org.graphstream.ui", "swing"); // tells GraphStream to use Swing
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
 
@@ -24,5 +24,6 @@ public class Main {
         ui.setController(controller);
 
         controller.fetchTopology();
+        controller.fetchCurrentTree();
     }
 }

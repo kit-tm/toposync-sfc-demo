@@ -70,6 +70,9 @@ public class SolutionJsonEncoder {
         JSONArray edgesJson = edgesJson(edges);
         solutionJson.put("edges", edgesJson);
 
+        final String type = solution.getSolutionType().name();
+        solutionJson.put("type", type);
+
         json.put("solution", solutionJson);
     }
 

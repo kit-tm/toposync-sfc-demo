@@ -25,15 +25,22 @@ public class NfvPlacementSolution {
     private Map<NprTraffic, List<Set<TopologyEdge>>> logicalEdgesPerTraffic;
     private Map<NprTraffic, Map<TopologyVertex, Double>> delays;
 
+    private SolutionType solutionType;
+
+    public enum SolutionType {
+        TOPOSYNC, SPT, TOPOSYNC_SFC
+    }
+
     public NfvPlacementSolution(Map<NprTraffic, Set<TopologyEdge>> edgesPerTraffic, Map<NprTraffic,
             Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements, NfvPlacementRequest request, double deviationSum,
-                                double delaySum, double networkLoad) {
+                                double delaySum, double networkLoad, SolutionType solutionType) {
         this.edgesPerTraffic = edgesPerTraffic;
         this.placements = placements;
         this.request = request;
         this.deviationSum = deviationSum;
         this.delaySum = delaySum;
         this.networkLoad = networkLoad;
+        this.solutionType = solutionType;
 
         logicalEdgesPerTraffic = new HashMap<>();
 
@@ -47,7 +54,10 @@ public class NfvPlacementSolution {
             }
         }
     }
-
+    
+    public SolutionType getSolutionType() {
+        return solutionType;
+    }
 
     public void setLogicalEdgesForTraffic(NprTraffic traffic, List<Set<TopologyEdge>> logicalToRealEdges) {
         logicalEdgesPerTraffic.put(traffic, logicalToRealEdges);
@@ -81,8 +91,8 @@ public class NfvPlacementSolution {
             Map<NprNfvTypes.Type, Set<TopologyVertex>>> placements, NfvPlacementRequest request,
                                 OptimizationGoal goal, double value, double deviationSum, double delaySum,
                                 double networkLoad, Map<NprTraffic, Double> deviationPerTraffic, Map<NprTraffic,
-            Double> maxDelayPerTraffic) {
-        this(edgesPerTraffic, placements, request, deviationSum, delaySum, networkLoad);
+            Double> maxDelayPerTraffic, SolutionType solutionType) {
+        this(edgesPerTraffic, placements, request, deviationSum, delaySum, networkLoad, solutionType);
         this.goal = goal;
         this.value = value;
         this.delayDeviationPerFlow = deviationPerTraffic;
