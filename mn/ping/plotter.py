@@ -13,7 +13,7 @@ if DIR_NAME == '':
 else:
     CSV_PATH = '%s/ping_data.csv' % DIR_NAME
 
-WINDOW_SIZE = 100
+WINDOW_SIZE = 50
 
 mpl.rcParams['toolbar'] = 'None'
 fig, ax = plt.subplots()
@@ -35,8 +35,8 @@ def animate(i):
         ys_10.append(int(splitted[1]))
         ys_11.append(int(splitted[2]))
 
-    line1, = plt.plot(xs, ys_10, 'r')
-    line2, = plt.plot(xs, ys_11, 'b')
+    line1, = plt.plot(xs, ys_10, 'r', marker='x', markersize=4)
+    line2, = plt.plot(xs, ys_11, 'b', marker='x', markersize=4)
 
     if len(xs) > 1:
         ax.set_xlim(xs[0], xs[len(xs)-1])
