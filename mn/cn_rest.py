@@ -14,7 +14,7 @@ class CnRESTRequestHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
         return switch_by_dpid
 
     def _vnf_host_name(self, vnf_type):
-        return "v%s" % str(vnf_type).lower()[0:2] #, str(dpid)[1:(len(str(dpid)) - 1)].lstrip('0'))
+        return "v%s" % str(vnf_type).lower()[0:2]
 
     def do_DELETE(self):
         print("cn_net: %s" % self.cn_net)
@@ -50,8 +50,7 @@ class CnRESTRequestHandler( BaseHTTPServer.BaseHTTPRequestHandler ):
         print("instantiating %s at %s" % (vnf_type, dpid))
 
         # create and add docker host
-        volumes = ["/home:/home", # code sync
-                   "/etc/localtime:/etc/localtime"] # timezone to host timezone
+        volumes = ["/home:/home"] # code sync
         host_name = self._vnf_host_name(vnf_type)
         vnf_docker_host = self.cn_net.addDocker(host_name, dimage=self.container, volumes=volumes)
         print("created host: %s" % vnf_docker_host)
