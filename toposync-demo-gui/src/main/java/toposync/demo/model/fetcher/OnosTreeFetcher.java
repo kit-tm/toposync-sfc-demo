@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import toposync.demo.model.GUI;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -58,15 +59,19 @@ public class OnosTreeFetcher implements TreeFetcher {
 
     private Graph handleResponse(HttpResponse<String> response) {
         logger.info("Handling response: {}", response);
-
-        if (response.statusCode() == 500) {
-            logger.info("Status Code 500..");
-            gui.showError("Computation infeasible");
-            return null;
-        } else {
-            JSONObject respJson = new JSONObject(response.body());
-            logger.info("solution json: {}", respJson);
-            return solutionJsonToGraph(respJson);
+        final int respCode = response.statusCode();
+        switch (respCode) {
+            case HttpURLConnection.HTTP_INTERNAL_ERROR:
+                logger.info("Internal Server error..");
+                gui.showError(response.body());
+                return null;
+            case HttpURLConnection.HTTP_OK:
+                logger.info("Computation was successful...");
+                JSONObject respJson = new JSONObject(response.body());
+                logger.info("solution json: {}", respJson);
+                return solutionJsonToGraph(respJson);
+            default:
+                throw new IllegalStateException("Unexpected response code: " + respCode);
         }
     }
 
