@@ -5,6 +5,7 @@ import gurobi.GRBEnv;
 import main.RequestGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import thesiscode.common.nfv.placement.deploy.InstantiationException;
 import thesiscode.common.nfv.placement.solver.NfvPlacementRequest;
 import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
 import thesiscode.common.nfv.placement.solver.OptimizationGoal;
@@ -14,6 +15,7 @@ import thesiscode.common.nfv.placement.solver.mfcp.used.TopoSyncSFCPlacementSolv
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 
 public class TreeComputation {
     public static final String TOPOSYNC_REQUEST_URI = "/tree/toposync-sfc";
@@ -51,21 +53,33 @@ public class TreeComputation {
         String solutionJson = null;
 
         if (solution != null) {
-            installer.installSolution(solution);
-            solutionJson = solutionJsonEncoder.toJson(solution);
-            sendSolution(httpExchange, solutionJson);
+            try {
+                installer.installSolution(solution);
+                solutionJson = solutionJsonEncoder.toJson(solution);
+                sendSolution(httpExchange, solutionJson);
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+                sendErrorResponse(httpExchange, "VNF instantiation/removal was not possible");
+            }
         } else {
-            httpExchange.sendResponseHeaders(500, -1);
+            sendErrorResponse(httpExchange, "Model was infeasible, solution == null");
         }
 
         return solutionJson;
     }
 
+    private void sendErrorResponse(HttpExchange httpExchange, String error) throws IOException {
+        httpExchange.sendResponseHeaders(HttpURLConnection.HTTP_INTERNAL_ERROR, error.getBytes().length);
+        OutputStream os = httpExchange.getResponseBody();
+        os.write(error.getBytes());
+        os.close();
+    }
+
     private NfvPlacementSolution computeTopoSyncTree() {
         NfvPlacementRequest request = requestGenerator.createRequest();
 
-        SfcPlacementSolver solver = new TopoSyncSFCPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION, true,
-                env, ALPHA);
+        SfcPlacementSolver solver = new TopoSyncSFCPlacementSolver(OptimizationGoal.MIN_MAX_DELAYSUM_THEN_DEVIATION,
+                true, env, ALPHA);
 
         NfvPlacementSolution solution = solver.solve(request);
         logger.info("Finished calculating TopoSync-SFC solution: {}", solution);
@@ -82,7 +96,7 @@ public class TreeComputation {
     }
 
     private void sendSolution(HttpExchange exchange, String solutionJson) throws IOException {
-        exchange.sendResponseHeaders(200, solutionJson.getBytes().length);
+        exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, solutionJson.getBytes().length);
         OutputStream os = exchange.getResponseBody();
         os.write(solutionJson.getBytes());
         os.close();

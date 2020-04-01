@@ -8,12 +8,15 @@ import org.onosproject.net.device.DeviceService;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.topology.TopologyEdge;
 import org.onosproject.net.topology.TopologyVertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thesiscode.common.flow.INfvTreeFlowPusher;
 import thesiscode.common.group.AbstractMulticastGroup;
 import thesiscode.common.group.IGroupMember;
 import thesiscode.common.group.WrappedHost;
 import thesiscode.common.group.igmp.IgmpGroupIdentifier;
 import thesiscode.common.group.igmp.IgmpMulticastGroup;
+import thesiscode.common.nfv.placement.deploy.InstantiationException;
 import thesiscode.common.nfv.placement.deploy.NfvInstantiator;
 import thesiscode.common.nfv.placement.solver.NfvPlacementSolution;
 import thesiscode.common.nfv.traffic.NprNfvTypes;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 
 public class SolutionInstaller {
     public static final String GROUP_IP = "224.2.3.4";
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private NfvPlacementSolution solution;
     private INfvTreeFlowPusher flowPusher;
     private NfvInstantiator instantiator;
@@ -41,21 +45,38 @@ public class SolutionInstaller {
         this.hostService = hostService;
     }
 
-    public void installSolution(NfvPlacementSolution solution) {
+    public void installSolution(NfvPlacementSolution solution) throws InstantiationException {
+        log.info("uninstalling old solution...");
         uninstallOldSolution();
         this.solution = solution;
+        log.info("placing VNFs..");
         Map<NprNfvTypes.Type, Set<ConnectPoint>> vnfConnectPoints = placeVNFs();
+        log.info("pushing flows..");
         pushFlows(vnfConnectPoints);
     }
 
-    private void uninstallOldSolution() {
+    private void uninstallOldSolution() throws InstantiationException {
         if (solution != null) {
+            log.info("deleting old flow rules");
             flowPusher.deleteFlows();
-            // TODO remove VNFs
+            log.info("removing old VNF instances");
+            removeVNFs();
         }
     }
 
-    private Map<NprNfvTypes.Type, Set<ConnectPoint>> placeVNFs() {
+    private void removeVNFs() throws InstantiationException {
+        for (Map.Entry<NprNfvTypes.Type, Set<TopologyVertex>> entry : solution.getSharedPlacements().entrySet()) {
+            NprNfvTypes.Type vnfType = entry.getKey();
+            Set<TopologyVertex> placementSwitches = entry.getValue();
+
+            for (TopologyVertex placementSwitch : placementSwitches) {
+                boolean hwAccelerated = ((WrappedPoPVertex) placementSwitch).hwAccelerationOffered(vnfType);
+                instantiator.remove(vnfType, deviceService.getDevice(placementSwitch.deviceId()), hwAccelerated);
+            }
+        }
+    }
+
+    private Map<NprNfvTypes.Type, Set<ConnectPoint>> placeVNFs() throws InstantiationException {
         Map<NprNfvTypes.Type, Set<TopologyVertex>> toInstantiate = solution.getSharedPlacements();
         Map<NprNfvTypes.Type, Set<ConnectPoint>> vnfCps = new HashMap<>();
 
