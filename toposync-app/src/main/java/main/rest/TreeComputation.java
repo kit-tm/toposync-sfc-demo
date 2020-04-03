@@ -2,6 +2,7 @@ package main.rest;
 
 import com.sun.net.httpserver.HttpExchange;
 import gurobi.GRBEnv;
+import main.ProgressMonitor;
 import main.RequestGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,27 +29,38 @@ public class TreeComputation {
     private GRBEnv env;
     private SolutionInstaller installer;
     private SolutionJsonEncoder solutionJsonEncoder;
+    private ProgressMonitor progressMonitor;
 
-    public TreeComputation(RequestGenerator requestGenerator, GRBEnv env, SolutionInstaller installer) {
+    public TreeComputation(RequestGenerator requestGenerator, GRBEnv env, SolutionInstaller installer,
+                           ProgressMonitor progressMonitor) {
         this.requestGenerator = requestGenerator;
         this.env = env;
         this.solutionJsonEncoder = new SolutionJsonEncoder();
         this.installer = installer;
+        this.progressMonitor = progressMonitor;
     }
 
     protected String handlePOST(HttpExchange httpExchange) throws IOException {
         String requestURI = httpExchange.getRequestURI().toString().toLowerCase();
         NfvPlacementSolution solution = null;
 
+
+        final boolean oldSolutionIsInstalled = (installer.getInstalledSolution() != null);
+
         if (requestURI.equals(TOPOSYNC_REQUEST_URI)) {
             logger.info("Calculating TopoSync-SFC tree...");
+            progressMonitor.init(oldSolutionIsInstalled, "TopoSync-SFC");
             solution = computeTopoSyncTree();
         } else if (requestURI.equals(REF_REQUEST_URI)) {
             logger.info("Calculating REF tree...");
+            progressMonitor.init(oldSolutionIsInstalled, "Shortest-Path-SFC");
             solution = computeRefTree();
         } else {
             logger.warn("unexpected request URI: {}", requestURI);
+            throw new IllegalStateException();
         }
+
+        progressMonitor.solutionCalculated();
 
         String solutionJson = null;
 

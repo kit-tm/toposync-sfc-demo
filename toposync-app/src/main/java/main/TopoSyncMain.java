@@ -5,6 +5,8 @@ import gurobi.GRBEnv;
 import gurobi.GRBException;
 import main.rest.RESTDispatcher;
 import main.rest.SolutionInstaller;
+import main.rest.TreeComputation;
+import main.view.ProgressWindow;
 import org.apache.felix.scr.annotations.*;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
@@ -70,14 +72,17 @@ public class TopoSyncMain {
     }
 
     private void setUpRESTServer() {
+        ProgressMonitor progressMonitor = new ProgressWindow();
         RequestGenerator requestGenerator = new RequestGenerator(clientServerLocator, topoService);
         INfvTreeFlowPusher pusher = new BidirectionalNfvTreeFlowPusher(appId, flowRuleService);
         NfvInstantiator instantiator = new NfvInstantiator();
-        SolutionInstaller installer = new SolutionInstaller(pusher, instantiator, deviceService, hostService);
+        SolutionInstaller installer = new SolutionInstaller(pusher, instantiator, deviceService, hostService,
+                progressMonitor);
 
         try {
             serverREST = HttpServer.create(new InetSocketAddress("localhost", 9355), 0);
-            serverREST.createContext("/tree", new RESTDispatcher(requestGenerator, env, installer));
+            TreeComputation treeComputation = new TreeComputation(requestGenerator, env, installer, progressMonitor);
+            serverREST.createContext("/tree", new RESTDispatcher(requestGenerator, env, installer, treeComputation));
             serverREST.start();
             log.info("Set up server..");
         } catch (IOException e) {

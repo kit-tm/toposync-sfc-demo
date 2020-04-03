@@ -1,6 +1,7 @@
 package main.rest;
 
 import main.ClientServerLocator;
+import main.ProgressMonitor;
 import org.onlab.packet.Ip4Address;
 import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.Link;
@@ -33,16 +34,22 @@ public class SolutionInstaller {
     private NfvPlacementSolution solution;
     private INfvTreeFlowPusher flowPusher;
     private NfvInstantiator instantiator;
+    private ProgressMonitor progressMonitor;
 
     private DeviceService deviceService;
     private HostService hostService;
 
+    public NfvPlacementSolution getInstalledSolution() {
+        return solution;
+    }
+
     public SolutionInstaller(INfvTreeFlowPusher flowPusher, NfvInstantiator instantiator, DeviceService deviceService
-            , HostService hostService) {
+            , HostService hostService, ProgressMonitor progressMonitor) {
         this.flowPusher = flowPusher;
         this.instantiator = instantiator;
         this.deviceService = deviceService;
         this.hostService = hostService;
+        this.progressMonitor = progressMonitor;
     }
 
     public void installSolution(NfvPlacementSolution solution) throws InstantiationException {
@@ -51,8 +58,10 @@ public class SolutionInstaller {
         this.solution = solution;
         log.info("placing VNFs..");
         Map<NprNfvTypes.Type, Set<ConnectPoint>> vnfConnectPoints = placeVNFs();
+        progressMonitor.vnfPlaced();
         log.info("pushing flows..");
         pushFlows(vnfConnectPoints);
+        progressMonitor.flowsInstalled();
     }
 
     private void uninstallOldSolution() throws InstantiationException {
@@ -61,6 +70,7 @@ public class SolutionInstaller {
             flowPusher.deleteFlows();
             log.info("removing old VNF instances");
             removeVNFs();
+            progressMonitor.oldSolutionUninstalled();
         }
     }
 

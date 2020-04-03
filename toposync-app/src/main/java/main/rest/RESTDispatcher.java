@@ -6,7 +6,6 @@ import gurobi.GRBEnv;
 import main.RequestGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import thesiscode.common.flow.DefaultNfvTreeFlowPusher;
 
 import java.io.IOException;
 
@@ -16,8 +15,9 @@ public class RESTDispatcher implements HttpHandler {
     private TreeComputation treeComputation;
     private TreeProvider treeProvider;
 
-    public RESTDispatcher(RequestGenerator requestGenerator, GRBEnv env, SolutionInstaller installer) {
-        this.treeComputation = new TreeComputation(requestGenerator, env, installer);
+    public RESTDispatcher(RequestGenerator requestGenerator, GRBEnv env, SolutionInstaller installer,
+                          TreeComputation treeComputation) {
+        this.treeComputation = treeComputation;
         this.treeProvider = new TreeProvider();
     }
 

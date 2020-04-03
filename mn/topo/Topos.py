@@ -21,22 +21,30 @@ def addLinkAndDebugPrint(topo, node1, node2):
     
 
 class PaperTopo( Topo ):
-        def __init__(self):
+        def __init__(self, hw=False):
             Topo.__init__(self)
             self._nodes = [None] # None because we want indices to start at 1 (consistent numbering with full paper figure)
             self.addNodes()
             self.addInfrastructureLinks()
-            self.addHosts()
+            self.addHosts(hw)
 
-        def addHosts(self):
-            client1 = self.addHost('c1host', ip='10.0.0.10')
-            addLinkAndDebugPrint(self, client1, self._nodes[9])
+        def getClientSwitches(self):
+            return [self._nodes[8], self._nodes[9]]
 
-            client2 = self.addHost('c2host', ip='10.0.0.11')
-            addLinkAndDebugPrint(self, client2, self._nodes[8])
-
+        def addHosts(self, hw):
+            # server is always emulated
+            print("adding server")
             server = self.addHost('shost', ip='10.0.0.1')
             addLinkAndDebugPrint(self, server, self._nodes[1])
+
+            # only add emulated clients here, hardware interfaces are added in startup script
+            if not hw:
+                print("adding emulated clients")
+                client1 = self.addHost('c1host', ip='10.0.0.10')
+                addLinkAndDebugPrint(self, client1, self._nodes[9])
+
+                client2 = self.addHost('c2host', ip='10.0.0.11')
+                addLinkAndDebugPrint(self, client2, self._nodes[8])
 
         def addNodes(self):
             for i in range(1, 10):
@@ -71,7 +79,7 @@ class PaperTopo( Topo ):
 # TBS DPID:   0x2 + id
 class TetraTopo( Topo ):
 
-    def __init__(self):
+    def __init__(self, hw=False):
         Topo.__init__(self)
         self.dxtt = []
         self.dxt = []
@@ -80,6 +88,11 @@ class TetraTopo( Topo ):
         self.dwsHosts = []
         self.addNodes()
         self.addLinks()
+        self.addServer()
+        self.addClients(hw)
+
+    def getClientSwitches(self):
+        return [self.tbs[5], self.tbs[10]]
         
 
     def addNodes(self):
@@ -111,17 +124,19 @@ class TetraTopo( Topo ):
 
             self.tbs.append(self.addSwitch('tbs%s' % id, dpid=dpid))
 
-    def addServer(self, node):
+    def addServer(self):
         print("adding server..")
         server = self.addHost('shost', ip='10.0.0.1')
-        addLinkAndDebugPrint(self, server, node)
+        addLinkAndDebugPrint(self, server, topo.tbs[0])
 
-    def addClients(self, nodes):
-        print("adding clients..")
-        for idx, node in enumerate(nodes):
-            print("idx %d, node %s" %(idx, node))
-            client = self.addHost('c%ihost' % idx, ip='10.0.0.%i' % (idx+10))
-            addLinkAndDebugPrint(self, client, node)
+    def addClients(self, hw):
+        CLIENT_SWITCHES = [self.tbs[5], self.tbs[10]]
+        if not hw:
+            print("adding emulated clients")
+            for idx, node in enumerate(CLIENT_SWITCHES):
+                print("idx %d, node %s" %(idx, node))
+                client = self.addHost('c%ihost' % idx, ip='10.0.0.%i' % (idx+10))
+                addLinkAndDebugPrint(self, client, node)
         
 
     def addLinks(self):
