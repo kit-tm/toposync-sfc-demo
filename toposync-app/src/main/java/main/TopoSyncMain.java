@@ -8,11 +8,19 @@ import main.rest.SolutionInstaller;
 import main.rest.TreeComputation;
 import main.view.ProgressWindow;
 import org.apache.felix.scr.annotations.*;
+import org.onlab.packet.ARP;
+import org.onlab.packet.Ethernet;
+import org.onlab.packet.Ip4Address;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
+import org.onosproject.net.ConnectPoint;
+import org.onosproject.net.Host;
 import org.onosproject.net.device.DeviceService;
+import org.onosproject.net.flow.DefaultTrafficTreatment;
 import org.onosproject.net.flow.FlowRuleService;
+import org.onosproject.net.flow.TrafficTreatment;
 import org.onosproject.net.host.HostService;
+import org.onosproject.net.packet.*;
 import org.onosproject.net.topology.TopologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +30,11 @@ import thesiscode.common.nfv.placement.deploy.NfvInstantiator;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.util.Set;
 
 @Component(immediate = true)
-public class TopoSyncMain {
+public class TopoSyncMain implements PacketProcessor {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
@@ -42,6 +52,9 @@ public class TopoSyncMain {
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     private DeviceService deviceService;
 
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    private PacketService packetService;
+
     public static ApplicationId appId;
 
     private GRBEnv env;
@@ -54,6 +67,9 @@ public class TopoSyncMain {
     protected void activate() throws GRBException {
         log.info("Activating..");
         appId = coreService.registerApplication("hiwi.tm.toposync-app");
+
+        log.info("Registering for packet processing");
+        packetService.addProcessor(this, PacketProcessor.ADVISOR_MAX);
 
         setUpClientServerLocator();
         setUpGurobi();
@@ -101,8 +117,37 @@ public class TopoSyncMain {
         log.info("Deactivating GRBEnv");
         env.dispose();
 
+        log.info("Removing ourself from packet processing.");
+        packetService.removeProcessor(this);
+
         log.info("Deactivated :)");
     }
 
 
+    /**
+     * Proxy ARP, so that hardware clients can respond with ICMP to server ping.
+     */
+    @Override
+    public void process(PacketContext packetContext) {
+        final InboundPacket pkt = packetContext.inPacket();
+        final ConnectPoint cp = pkt.receivedFrom();
+        final Ethernet eth = pkt.parsed();
+        final short ethType = eth.getEtherType();
+        if (ethType == Ethernet.TYPE_ARP) {
+            ARP arp = (ARP) eth.getPayload();
+            log.info("Received ARP: {}", arp);
+            Ip4Address requestAddress = Ip4Address.valueOf(arp.getTargetProtocolAddress());
+            Set<Host> hostsWithRequestedIP = hostService.getHostsByIp(requestAddress);
+            if (hostsWithRequestedIP.size() != 1) {
+                log.info("Found not exactly one host with requested IP: {}. Returning.", hostsWithRequestedIP);
+                return;
+            }
+            Host requestedHost = hostsWithRequestedIP.iterator().next();
+            Ethernet respEth = ARP.buildArpReply(requestAddress, requestedHost.mac(), eth);
+            TrafficTreatment treat = DefaultTrafficTreatment.builder().setOutput(cp.port()).build();
+            OutboundPacket out = new DefaultOutboundPacket(cp.deviceId(), treat, ByteBuffer.wrap(respEth.serialize()));
+            log.info("Sending ARP reply: {}", respEth);
+            packetService.emit(out);
+        }
+    }
 }
