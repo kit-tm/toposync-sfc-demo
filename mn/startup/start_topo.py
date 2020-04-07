@@ -9,7 +9,7 @@ import subprocess
 
 from mininet.net import Containernet
 from mininet.link import TCLink, Intf
-from mininet.node import RemoteController, Docker
+from mininet.node import RemoteController, Docker, Node, Host
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info, error
 from mn.cn_rest import start_rest
@@ -65,10 +65,12 @@ def main():
     net = Containernet(controller=RemoteController, topo=topo, build=True, autoSetMacs=True, link=TCLink)
 
     if args.hw:
-        print("**Adding hardware interfaces to client switches.")
-        for sw in topo.getClientSwitches():
-            print("*Switch %s" % sw)
-            _intf = Intf(INTERFACE, node=net.getNodeByName(sw))
+        print('**Adding dummy host (hardware setup).')
+        net.addHost('dummy')
+        _intf = Intf(INTERFACE, node=net.getNodeByName('dummy'))
+        client_switches = list(map(net.getNodeByName, topo.getClientSwitches()))
+        for sw in client_switches:
+            net.addLink(sw, net.getNodeByName('dummy'))
 
     net.start()
 
@@ -83,14 +85,27 @@ def main():
     hosts = net.hosts
 
     # send arp from reqHost to every other host -> required by ONOS HostService to resolve hosts (i.e. map MAC<->IP)
-    if not args.hw:
+    if args.hw:
+        print('**Starting to ARP from server (hardware setup).')
+        server = net.getNodeByName('shost')
+        startARP(server, server.IP(), server.MAC(), '10.0.0.20', server.intf())
+    else:
         print('**Starting to ARP for ONOS host discovery.')
         reqHost = hosts[0]
         for host in hosts:
             if(host is not reqHost):
                 startARP(reqHost, reqHost.IP(), reqHost.MAC(), host.IP(), reqHost.intf())
-    else:
-        print('**Hardware setup, skipping ARPing.')
+
+    if args.hw:
+        dummy = net.getNodeByName('dummy')
+        print('*Starting dummy_forwarder on dummy.')
+        printAndExecute(dummy, 'ip link set lo up')  # avoid bind error due to missing loopback intf
+        printAndExecute(dummy, 'python ../dummy_forwarder.py &')
+        time.sleep(3)
+        print('**Pinging clients from dummy.')
+        printAndExecute(dummy, 'ping -I eno1 -c 1 10.0.0.11')
+        printAndExecute(dummy, 'ping -I eno1 -c 1 10.0.0.10')
+ 
 
     # start to ping from server to clients
     print('**Starting to ping from server to clients.')
