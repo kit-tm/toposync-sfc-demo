@@ -7,12 +7,7 @@ import time
 import csv
 from struct import *
 from scapy.all import *
-sys.path.append("/home/felix/Desktop/ba/code")
-#from mn.hosts.api.group.groupmanagement import GroupManager
-from mn.hosts.cli.UDP.UDP_client import sendPacket
 import threading
-
-#manager = GroupManager()
 
 #Convert a string of 6 characters of ethernet address into a dash separated hex string
 def eth_addr (a) :
@@ -23,16 +18,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument("iface", help="layer 2 interface to redirect multicast packets to", type=str)
 parser.add_argument("delay", help="delay which should be added by this VNF", type=int)
 parser.add_argument("name", help="VNF name to concatenate to UDP payload", type=str)
-parser.add_argument('--time', dest='time', action='store_true')
 parser.add_argument('--v', help="verbose", action="store_true")
 args = parser.parse_args()
 
-
 s = socket.socket( socket.AF_PACKET , socket.SOCK_RAW , socket.ntohs(0x0003))
-
-def sleep(time_in_ms):
-    time.sleep(time_in_ms / 1000.0)
-
 
 scapy_sock = conf.L2socket(iface=args.iface)
 
