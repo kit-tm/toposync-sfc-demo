@@ -20,6 +20,7 @@
         <module>common</module>
         <module>nfv</module>
         <module>toposync-app</module>
+        <module>whack-a-mole-server</module>
     </modules>
 
 </project>
