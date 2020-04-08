@@ -38,87 +38,118 @@ def startARP(host, srcIP, srcMAC, dstIP, iface):
     cmdString = 'python /home/felix/Desktop/toposync/mn/ARP_client.py \"%s\" %s %s %s' % (srcIP, dstIP, srcMAC, iface)
     printAndExecute(host, cmdString)
 
-def startPing(host):
+def startPing(shost):
+    print('**Starting to ping from server to clients.')
     cmdString = 'python /home/felix/Desktop/toposync/mn/ping/ping.py &'
-    printAndExecute(host, cmdString)
+    printAndExecute(shost, cmdString)
+
+    print('**Starting to plot ping results.')
+    plotter_proc = subprocess.Popen(['python','/home/felix/Desktop/toposync/mn/ping/plotter.py', '&'])
+
+    return plotter_proc
+
+def startWhackAMole(shost, hw):
+    print('**Starting whack-a-mole server.')
+    printAndExecute(shost, 'java -jar ../../whack-a-mole-server/target/whack-a-mole-server-1.0-SNAPSHOT.jar &')
+
+    if not hw:
+        print('**Starting whack-a-mole clients (TODO!!!)')
+
+def topoInstance(topo, hw):
+    inst = None
+    if topo == "tetra":
+        inst = mn.topo.Topos.TetraTopo(hw=hw)
+    elif topo == "paper":
+        inst = mn.topo.Topos.PaperTopo(hw=hw)
+    else:
+        print("[ERROR] Invalid topology: %s" % topo)
+
+    return inst
+
+def addDummyHost(net, topo):
+    print('**Adding dummy host (hardware setup).')
+    net.addHost('dummy')
+    _intf = Intf(INTERFACE, node=net.getNodeByName('dummy'))
+    client_switches = list(map(net.getNodeByName, topo.getClientSwitches()))
+    for sw in client_switches:
+        net.addLink(sw, net.getNodeByName('dummy'))
+
+def setUpDummy(net):
+    dummy = net.getNodeByName('dummy')
+    print('*Starting dummy_forwarder on dummy.')
+    printAndExecute(dummy, 'ip link set lo up')  # avoid bind error due to missing loopback intf
+    printAndExecute(dummy, 'python ../dummy_forwarder.py &')
+    time.sleep(3)
+    print('**Pinging clients from dummy.')
+    printAndExecute(dummy, 'ping -I eno1 -c 1 10.0.0.11')
+    printAndExecute(dummy, 'ping -I eno1 -c 1 10.0.0.10')
+
+def startREST(net):
+    print("**Starting containernet REST Server.")
+    thr = threading.Thread(target=start_rest, args=(net,)) # comma behind net is on purpose
+    thr.daemon = True
+    thr.start()
+
+def arpHw(net):
+    print('**Starting to ARP from server (hardware setup).')
+    server = net.getNodeByName('shost')
+    startARP(server, server.IP(), server.MAC(), '10.0.0.20', server.intf())
+
+def arpEmulated(net):
+    print('**Starting to ARP (emulated setup).')
+    hosts = net.hosts
+    reqHost = hosts[0]
+    for host in hosts:
+        if(host is not reqHost):
+            startARP(reqHost, reqHost.IP(), reqHost.MAC(), host.IP(), reqHost.intf())
+
 
 
 def main():
     parser = argparse.ArgumentParser(description='Starts a containernet topology and a REST server for VNF instantiation from controller.')
     parser.add_argument('topology', metavar='T', type=str, nargs=1, help="the topology to start")
     parser.add_argument('--hw', action='store_true')
-
     args = parser.parse_args()
 
-    topo = args.topology[0]
-
-    if topo == "tetra":
-        topo = mn.topo.Topos.TetraTopo(hw=args.hw)
-    elif topo == "paper":
-        topo = mn.topo.Topos.PaperTopo(hw=args.hw)
-    else:
-        print("[ERROR] Invalid topology: %s" % topo)
-
+    topo = topoInstance(args.topology[0], args.hw)
 
     setLogLevel('info')
 
     net = Containernet(controller=RemoteController, topo=topo, build=True, autoSetMacs=True, link=TCLink)
 
     if args.hw:
-        print('**Adding dummy host (hardware setup).')
-        net.addHost('dummy')
-        _intf = Intf(INTERFACE, node=net.getNodeByName('dummy'))
-        client_switches = list(map(net.getNodeByName, topo.getClientSwitches()))
-        for sw in client_switches:
-            net.addLink(sw, net.getNodeByName('dummy'))
+        addDummyHost(net, topo)
 
     net.start()
 
-    print("**Starting containernet REST Server.")
-    thr = threading.Thread(target=start_rest, args=(net,)) # comma behind net is on purpose
-    thr.daemon = True
-    thr.start()
+    # for VNF mgmt
+    startREST(net)
 
     # wait for connection with controller
     time.sleep(3)
 
-    hosts = net.hosts
-
-    # send arp from reqHost to every other host -> required by ONOS HostService to resolve hosts (i.e. map MAC<->IP)
+    # ARP
     if args.hw:
-        print('**Starting to ARP from server (hardware setup).')
-        server = net.getNodeByName('shost')
-        startARP(server, server.IP(), server.MAC(), '10.0.0.20', server.intf())
+        arpHw(net)
     else:
-        print('**Starting to ARP for ONOS host discovery.')
-        reqHost = hosts[0]
-        for host in hosts:
-            if(host is not reqHost):
-                startARP(reqHost, reqHost.IP(), reqHost.MAC(), host.IP(), reqHost.intf())
+        arpEmulated(net)
 
+    # dummy
     if args.hw:
-        dummy = net.getNodeByName('dummy')
-        print('*Starting dummy_forwarder on dummy.')
-        printAndExecute(dummy, 'ip link set lo up')  # avoid bind error due to missing loopback intf
-        printAndExecute(dummy, 'python ../dummy_forwarder.py &')
-        time.sleep(3)
-        print('**Pinging clients from dummy.')
-        printAndExecute(dummy, 'ping -I eno1 -c 1 10.0.0.11')
-        printAndExecute(dummy, 'ping -I eno1 -c 1 10.0.0.10')
+        setUpDummy(net)
  
-
-    # start to ping from server to clients
-    print('**Starting to ping from server to clients.')
+    # plot
     shost = net.getNodeByName('shost')
-    startPing(shost)
+    plotter_proc = startPing(shost)
 
-    # start to plot ping results
-    print('**Starting to plot ping results.')
-    p = subprocess.Popen(['python','/home/felix/Desktop/toposync/mn/ping/plotter.py', '&'])
+    # whack a mole
+    startWhackAMole(shost, args.hw)
 
+    # standby
     CLI(net)
 
-    p.kill()
+    # cleanup
+    plotter_proc.kill()
     net.stop()
 
 if __name__ == '__main__':
