@@ -29,7 +29,7 @@ time_since_arp = {'10.0.0.10' : 0,
                   '0.0.0.0'   : 0}
 
 def forward_arp(pkt, ip, socket, ts):
-    if time_since_arp[ip] == 0 or ((ts - time_since_arp[ip]) > 10):
+    if time_since_arp[ip] == 0 or ((ts - time_since_arp[ip]) > 2):
         if args.v:
             print('forwarding ARP')
         socket.send(pkt)
