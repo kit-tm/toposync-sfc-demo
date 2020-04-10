@@ -48,12 +48,14 @@ def startPing(shost):
 
     return plotter_proc
 
-def startWhackAMole(shost, hw):
+def startWhackAMole(shost, clients):
     print('**Starting whack-a-mole server.')
     printAndExecute(shost, 'java -jar ../../whack-a-mole-server/target/whack-a-mole-server-1.0-SNAPSHOT.jar &')
 
-    if not hw:
-        print('**Starting whack-a-mole clients (TODO!!!)')
+    if clients is not None:
+        print('**Starting whack-a-mole clients.')
+        for client in clients:
+            printAndExecute(client, 'java -jar ../../whack-a-mole-client/target/whack-a-mole-client-1.0-SNAPSHOT.jar %s &' % client.IP())
 
 def topoInstance(topo, hw):
     inst = None
@@ -143,7 +145,11 @@ def main():
     plotter_proc = startPing(shost)
 
     # whack a mole
-    startWhackAMole(shost, args.hw)
+    if args.hw:
+        startWhackAMole(shost, None)
+    else:
+        clients = [net.getNodeByName('c1host'), net.getNodeByName('c2host')]
+        startWhackAMole(shost, clients)
 
     # standby
     CLI(net)

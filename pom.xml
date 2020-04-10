@@ -21,6 +21,7 @@
         <module>nfv</module>
         <module>toposync-app</module>
         <module>whack-a-mole-server</module>
+        <module>whack-a-mole-client</module>
     </modules>
 
 </project>
