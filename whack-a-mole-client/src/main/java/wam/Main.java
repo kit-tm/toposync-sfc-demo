@@ -12,6 +12,7 @@ public class Main {
         checkArgs(args);
         InetAddress ip = ip(args[0]);
         Receiver receiver = new Receiver(ip);
+        Runtime.getRuntime().addShutdownHook(new Thread(receiver::close));
         ClientWindow cw = new ClientWindow(ip.toString());
         receiver.startReceiveLoop(cw);
     }

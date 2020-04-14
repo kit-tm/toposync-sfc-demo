@@ -3,18 +3,18 @@ package wam.view;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.MouseListener;
 import java.util.Collection;
 
 public class GridPanel extends JPanel {
     private static final Color INACTIVE = Color.LIGHT_GRAY;
     private static final Color ACTIVE = Color.RED;
     private JLabel[][] labels;
+    private long round;
 
     public GridPanel(int rows, int cols, int cellSize) {
         labels = new JLabel[rows][cols];
 
-        MouseListener mouseListener = new CellMouseListener(this);
+        CellMouseListener mouseListener = new CellMouseListener(this);
 
         Dimension prefSize = new Dimension(cellSize, cellSize);
         setLayout(new GridLayout(rows, cols));
@@ -39,14 +39,18 @@ public class GridPanel extends JPanel {
                     labels[row][col].setBackground(INACTIVE);
                 }
             }
+            repaint();
         });
     }
 
-    public void showMoles(Collection<GridPosition> moles) {
+    public void showMoles(long round, Collection<GridPosition> moles) {
+        this.round = round;
         SwingUtilities.invokeLater(() -> {
             for (GridPosition mole : moles) {
                 labels[mole.row][mole.col].setBackground(ACTIVE);
+                repaint();
             }
+            repaint();
         });
     }
 

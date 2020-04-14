@@ -15,17 +15,22 @@ import java.io.StringWriter;
 
 public class MolesXMLEncoder {
 
-    public String toXML(GridPosition[] moles) throws ParserConfigurationException, TransformerException {
+    public String toXML(long round, GridPosition[] moles) throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         Document doc = dbf.newDocumentBuilder().newDocument();
-        Element root = doc.createElement("moles");
-        doc.appendChild(root);
+
+        Element molesElem = doc.createElement("moles");
+        doc.appendChild(molesElem);
+
+        Element roundElem = doc.createElement("round");
+        roundElem.setAttribute("count", String.valueOf(round));
+        molesElem.appendChild(roundElem);
 
         for (GridPosition mole : moles) {
             Element moleElem = doc.createElement("mole");
             moleElem.setAttribute("row", String.valueOf(mole.row));
             moleElem.setAttribute("col", String.valueOf(mole.col));
-            root.appendChild(moleElem);
+            molesElem.appendChild(moleElem);
         }
 
         Transformer transf = TransformerFactory.newInstance().newTransformer();

@@ -30,15 +30,29 @@ public class Receiver {
 
             Set<GridPosition> moles = new HashSet<>();
 
-            for (String line : str.trim().split("\n")) {
-                String[] rowCol = line.trim().split(",");
-                int row = Integer.parseInt(rowCol[0]);
-                int col = Integer.parseInt(rowCol[1]);
-                moles.add(new GridPosition(row, col));
+            long round = 0;
+            String[] lines = str.trim().split("\n");
+
+
+            for (int i = 0; i < lines.length; i++) {
+                String line = lines[i];
+                if (i == 0) {
+                    round = Long.parseLong(line);
+                } else {
+                    String[] rowCol = line.trim().split(",");
+                    int row = Integer.parseInt(rowCol[0]);
+                    int col = Integer.parseInt(rowCol[1]);
+                    moles.add(new GridPosition(row, col));
+                }
+
             }
 
-            window.showMoles(moles);
+            window.showMoles(round, moles);
         }
+    }
+
+    public void close() {
+        sock.close();
     }
 
 }

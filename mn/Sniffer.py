@@ -66,8 +66,15 @@ def transcode_to_csv(xml_data):
                 print('col: %s' % col)
                 print('...')
             csv_string += (row + ',' + col)
-            if idx != len(root)-1:
-                csv_string += '\n'
+        elif child.tag == 'round':
+            roundCnt = child.attrib['count']
+            if args.v:
+                print('round_count: %s' % roundCnt)
+            csv_string += roundCnt
+
+        if idx != len(root)-1:
+            csv_string += '\n'
+
     
     if args.v:
         print('transcoded:\n\"%s\"' % csv_string)

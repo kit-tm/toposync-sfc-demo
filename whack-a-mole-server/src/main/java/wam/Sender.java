@@ -21,4 +21,8 @@ public class Sender {
         sock.send(pkt);
     }
 
+    public void close() {
+        sock.close();
+    }
+
 }
