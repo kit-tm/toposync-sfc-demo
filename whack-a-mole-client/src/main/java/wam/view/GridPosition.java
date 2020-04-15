@@ -1,8 +1,8 @@
 package wam.view;
 
 public class GridPosition {
-    int row;
-    int col;
+    public int row;
+    public int col;
 
     public GridPosition(int row, int col) {
         this.row = row;

@@ -77,9 +77,37 @@ def transcode_to_csv(xml_data):
 
     
     if args.v:
-        print('transcoded:\n\"%s\"' % csv_string)
+        print('transcoded moles:\n\"%s\"' % csv_string)
 
     return csv_string
+
+
+def transcode_to_xml(csv_data):
+    if args.v:
+        print('transcoding response: %s' % csv_data)
+    splitted = csv_data.split('\n')
+    round = splitted[0]
+    row_col = splitted[1]
+    row = row_col.split(',')[0]
+    col = row_col.split(',')[1]
+
+    if args.v:
+        print('round %s' % round)
+        print('row %s' % row)
+        print('col %s' % col)
+
+    resp = ET.Element('response')
+    ET.SubElement(resp, 'round').text = str(round)
+    cell = ET.SubElement(resp, 'clickedCell')
+    ET.SubElement(cell, 'row').text = str(row)
+    ET.SubElement(cell, 'col').text = str(col)
+
+    ET.ElementTree(resp)
+    xml = ET.tostring(resp, encoding='UTF-8')
+    if args.v:
+        print('transcoded response:\n"%s\"' % xml)
+    return xml
+
 
 
 
@@ -129,11 +157,10 @@ while True:
 
         ip_dst = ipaddress.IPv4Address(iph[9])
 
-        if str(ip_dst) == "10.0.0.1": # ping from receiver back to source
-            #print("directly forwarding reverse ping")
+        if str(ip_dst) == "10.0.0.1" and (protocol == 1): # ping from communication back to source 
             ttl,_ = ttl_mac(args.name)
             pkt = Ether(dst=eth_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl, proto=protocol)/Raw(load=ip_data)
-            scapy_sock.send(pkt)
+            scapy_sock.send(pkt) # NOT DELAYED!
 
         ## UDP
         if protocol == 17:
@@ -162,11 +189,16 @@ while True:
                     print('whack-a-mole packet!')
 
                 ttl, mac_dst = ttl_mac(args.name)
-
-                transcoded_data = transcode_to_csv(str(data))
+                
+                transcoded_data = None
+                if s_addr == '10.0.0.1':
+                    transcoded_data = transcode_to_csv(str(data))
+                elif (s_addr == '10.0.0.10') or (s_addr == '10.0.0.11'):
+                    transcoded_data = transcode_to_xml(str(data))
+                else:
+                    raise Exception('Unexpected Whack-a-mole-packet (unknown party %s)' % s_addr)
 
                 pkt = Ether(dst=mac_dst)/IP(dst=d_addr, src=s_addr, ttl=ttl, proto=protocol)/UDP(sport=source_port,dport=dest_port)/Raw(load=transcoded_data)
-
                 forward_delayed(pkt, args.delay, reception_time)
                 
 

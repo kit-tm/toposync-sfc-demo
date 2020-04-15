@@ -12,19 +12,36 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Receiver {
-    private static final String GROUP_IP_STR = "224.2.3.4";
+public class Communication {
+    private static final int PORT = 9090;
+    private static final String SERVER_IP_STR = "10.0.0.1";
     private DatagramSocket sock;
 
-    public Receiver(InetAddress bindAddr) throws SocketException {
+    public Communication(InetAddress bindAddr) throws SocketException {
         this.sock = new DatagramSocket(9090, bindAddr);
     }
 
-    public void startReceiveLoop(ClientWindow window) throws IOException {
+    public void send(String response) throws IOException {
+        byte[] buf = response.getBytes(StandardCharsets.UTF_8);
+        DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length, InetAddress.getByName(SERVER_IP_STR), PORT);
+        sock.send(pkt);
+    }
+
+    public void startReceiveLoop(ClientWindow window) {
+        Thread t = new Thread(() -> receiveLoop(window));
+        t.setUncaughtExceptionHandler((e, th) -> th.printStackTrace());
+        t.start();
+    }
+
+    private void receiveLoop(ClientWindow window) {
         while (true) {
             byte[] buf = new byte[1000];
             DatagramPacket pkt = new DatagramPacket(buf, 1000);
-            sock.receive(pkt);
+            try {
+                sock.receive(pkt);
+            } catch (IOException e) {
+                throw new IllegalStateException(e.getCause());
+            }
 
             String str = new String(pkt.getData(), StandardCharsets.UTF_8);
 

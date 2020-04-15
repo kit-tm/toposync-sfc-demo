@@ -11,10 +11,15 @@ public class Main {
     public static void main(String[] args) throws IOException {
         checkArgs(args);
         InetAddress ip = ip(args[0]);
-        Receiver receiver = new Receiver(ip);
-        Runtime.getRuntime().addShutdownHook(new Thread(receiver::close));
-        ClientWindow cw = new ClientWindow(ip.toString());
-        receiver.startReceiveLoop(cw);
+        Communication communication = new Communication(ip);
+        Runtime.getRuntime().addShutdownHook(new Thread(communication::close));
+
+
+        ResponseCSVEncoder encoder = new ResponseCSVEncoder();
+        Responder responder = new Responder(encoder, communication);
+
+        ClientWindow cw = new ClientWindow(ip.toString(), responder);
+        communication.startReceiveLoop(cw);
     }
 
     private static void checkArgs(String[] args) {
