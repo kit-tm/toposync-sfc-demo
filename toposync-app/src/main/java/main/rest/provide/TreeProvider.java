@@ -25,7 +25,7 @@ public class TreeProvider {
         }
     }
 
-    protected void setLastSolution(String solution) {
+    public void setLastSolution(String solution) {
         this.lastSolutionJson = solution;
     }
 

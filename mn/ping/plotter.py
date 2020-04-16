@@ -43,7 +43,7 @@ def animate(i):
         max_y = max(max(ys_10), max(ys_11))
         top = plt.ylim()[1]
         if max_y > top:
-            plt.ylim(top=max_y)
+            plt.ylim(top=(max_y+200))
 
     plt.legend((line1,line2), ('client1 (10.0.0.10)', 'client2 (10.0.0.11)'))
 
