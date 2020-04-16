@@ -1,4 +1,4 @@
-package main.rest;
+package main.rest.provide;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ public class TreeProvider {
     private String lastSolutionJson;
 
 
-    protected void handleGET(HttpExchange httpExchange) throws IOException {
+    public void handleGET(HttpExchange httpExchange) throws IOException {
         final String requestURI = httpExchange.getRequestURI().toString().toLowerCase();
 
         if (requestURI.equals(CURRENT_TREE_URI)) {

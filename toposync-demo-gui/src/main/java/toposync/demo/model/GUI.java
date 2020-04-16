@@ -6,4 +6,6 @@ public interface GUI extends StateObserver {
     void topoSyncFetched();
 
     void shortestPathFetched();
+
+    void reset();
 }

@@ -6,6 +6,8 @@ import gurobi.GRBException;
 import main.rest.RESTDispatcher;
 import main.rest.SolutionInstaller;
 import main.rest.TreeComputation;
+import main.rest.provide.SolutionInvalidator;
+import main.rest.provide.TreeProvider;
 import main.view.ProgressWindow;
 import org.apache.felix.scr.annotations.*;
 import org.onlab.packet.ARP;
@@ -63,6 +65,8 @@ public class TopoSyncMain implements PacketProcessor {
 
     private HttpServer serverREST;
 
+    private SolutionInvalidator solutionInvalidator;
+
     @Activate
     protected void activate() throws GRBException {
         log.info("Activating..");
@@ -74,6 +78,8 @@ public class TopoSyncMain implements PacketProcessor {
         setUpClientServerLocator();
         setUpGurobi();
         setUpRESTServer();
+
+        topoService.addListener(solutionInvalidator);
     }
 
     private void setUpClientServerLocator() {
@@ -97,8 +103,11 @@ public class TopoSyncMain implements PacketProcessor {
 
         try {
             serverREST = HttpServer.create(new InetSocketAddress("localhost", 9355), 0);
+
             TreeComputation treeComputation = new TreeComputation(requestGenerator, env, installer, progressMonitor);
-            serverREST.createContext("/tree", new RESTDispatcher(requestGenerator, env, installer, treeComputation));
+            TreeProvider provider = new TreeProvider();
+            solutionInvalidator = new SolutionInvalidator(provider);
+            serverREST.createContext("/tree", new RESTDispatcher(treeComputation, provider));
             serverREST.start();
             log.info("Set up server..");
         } catch (IOException e) {
@@ -113,6 +122,7 @@ public class TopoSyncMain implements PacketProcessor {
 
         log.info("Removing listeners..");
         hostService.removeListener(clientServerLocator);
+        topoService.removeListener(solutionInvalidator);
 
         log.info("Deactivating GRBEnv");
         env.dispose();
@@ -146,7 +156,7 @@ public class TopoSyncMain implements PacketProcessor {
             Ethernet respEth = ARP.buildArpReply(requestAddress, requestedHost.mac(), eth);
             TrafficTreatment treat = DefaultTrafficTreatment.builder().setOutput(cp.port()).build();
             OutboundPacket out = new DefaultOutboundPacket(cp.deviceId(), treat, ByteBuffer.wrap(respEth.serialize()));
-            log.info("Sending ARP reply: {}", respEth);
+            //log.info("Sending ARP reply: {}", respEth);
             packetService.emit(out);
         }
     }

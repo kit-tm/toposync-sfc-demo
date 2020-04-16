@@ -95,4 +95,9 @@ public class DemoUI extends JFrame implements GUI {
     public void updateGraph() {
         topoPane.refresh();
     }
+
+    @Override
+    public void reset() {
+        treeComputationPane.reset();
+    }
 }

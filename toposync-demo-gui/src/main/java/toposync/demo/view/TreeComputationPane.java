@@ -25,7 +25,7 @@ public class TreeComputationPane extends JPanel {
 
     private void initStatus() {
         statPre = new JLabel("Status:");
-        status = new JTextArea("None.");
+        status = new JTextArea("No tree installed.");
 
         add(statPre);
         add(status);
@@ -87,5 +87,13 @@ public class TreeComputationPane extends JPanel {
         log.debug("changing status");
         status.setText(statusMessage);
         status.getCaret().setVisible(showBlinkingCaret);
+    }
+
+    public void reset() {
+        SwingUtilities.invokeLater(() -> {
+            enableShortestPath();
+            enableTopoSync();
+            status.setText("No tree installed.");
+        });
     }
 }

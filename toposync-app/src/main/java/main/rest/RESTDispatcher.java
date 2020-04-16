@@ -2,8 +2,7 @@ package main.rest;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import gurobi.GRBEnv;
-import main.RequestGenerator;
+import main.rest.provide.TreeProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,12 +12,11 @@ public class RESTDispatcher implements HttpHandler {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private TreeComputation treeComputation;
-    private TreeProvider treeProvider;
+    private main.rest.provide.TreeProvider treeProvider;
 
-    public RESTDispatcher(RequestGenerator requestGenerator, GRBEnv env, SolutionInstaller installer,
-                          TreeComputation treeComputation) {
+    public RESTDispatcher(TreeComputation treeComputation, TreeProvider provider) {
         this.treeComputation = treeComputation;
-        this.treeProvider = new TreeProvider();
+        this.treeProvider = provider;
     }
 
     @Override

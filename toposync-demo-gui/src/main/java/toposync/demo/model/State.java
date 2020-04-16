@@ -2,7 +2,9 @@ package toposync.demo.model;
 
 import org.graphstream.graph.Graph;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class State {
     private List<StateObserver> observers;
@@ -27,7 +29,7 @@ public class State {
     }
 
     public void setSolution(Graph solution) {
-        if (solution != null) {
+        if (solution != null && !(solution.getEdgeCount() == 0 && solution.getNodeCount() != 0)) {
             merger.merge(topology, solution);
             updateObservers();
         }

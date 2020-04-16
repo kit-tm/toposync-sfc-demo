@@ -69,6 +69,8 @@ public class Controller {
                 logger.info("Fetched currently installed tree with {} nodes, {} edges", tree.getNodeCount(),
                         tree.getEdgeCount());
                 state.setSolution(tree);
+            } else {
+                gui.reset(); // no tree currently installed -> re-activate buttons etc.
             }
         } catch (IOException | InterruptedException e) {
             gui.showError("Error when fetching currently installed tree.");
