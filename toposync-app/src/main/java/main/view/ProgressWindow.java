@@ -7,9 +7,9 @@ import java.awt.*;
 import java.net.URL;
 
 public class ProgressWindow extends JFrame implements ProgressMonitor {
-    private static final String LOADER_FILE = "ajax-loader.gif";
-    private static final String CHECKMARK_FILE = "rsz_checkmark.png";
-    private static final float FONT_SIZE = 16.0f;
+    private static final String LOADER_FILE = "spinner_32.gif";
+    private static final String CHECKMARK_FILE = "checkmark_32.png";
+    private static final float FONT_SIZE = 34.0f;
     private Container contPane;
     private ImageIcon checkmark;
     private ImageIcon loading;
@@ -122,9 +122,12 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
         }
     }
 
-    /*public static void main(String[] args) throws InterruptedException {
+
+    // for testing purposes
+    /*
+    public static void main(String[] args) throws InterruptedException {
         ProgressMonitor pm = new ProgressWindow();
-        pm.init(true, "TopoSync-SFC");
+        pm.init(true, "Shortest-Path-SFC");
         Thread.sleep(2000);
         pm.solutionCalculated();
         Thread.sleep(2000);
