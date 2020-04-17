@@ -16,7 +16,7 @@ def addLinkAndDebugPrint(topo, node1, node2):
         topo.addLink(node1, node2)
         print('added link %s <-> %s' % (node1, node2))
     else:
-        topo.addLink(node1, node2, **{'delay': '100ms'})
+        topo.addLink(node1, node2, **{'delay': '150ms'})
         print('added link %s <-> %s (artificial delay)' % (node1, node2))
     
 

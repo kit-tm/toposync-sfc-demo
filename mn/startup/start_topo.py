@@ -49,8 +49,9 @@ def startPing(shost):
     return plotter_proc
 
 def startWhackAMole(shost, clients):
+    SEND_PERIOD_MS = 500
     print('**Starting whack-a-mole server.')
-    printAndExecute(shost, 'java -jar ../../whack-a-mole-server/target/whack-a-mole-server-1.0-SNAPSHOT.jar &')
+    printAndExecute(shost, 'java -jar ../../whack-a-mole-server/target/whack-a-mole-server-1.0-SNAPSHOT.jar %s &' % SEND_PERIOD_MS)
 
     if clients is not None:
         print('**Starting whack-a-mole clients.')

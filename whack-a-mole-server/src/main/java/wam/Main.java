@@ -10,14 +10,16 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     private static MoleGenerator gen;
     private static MolesXMLEncoder enc;
-    private static Sender sender;
+    private static ServerCommunication communication;
     private static ScheduledExecutorService executor;
     private static long round = 0;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParserConfigurationException {
+        long period = parseArgs(args);
+
         gen = new MoleGenerator();
         enc = new MolesXMLEncoder();
-        sender = new Sender();
+        communication = new ServerCommunication();
 
         executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(() -> {
@@ -26,22 +28,30 @@ public class Main {
             } catch (ParserConfigurationException | TransformerException | IOException e) {
                 e.printStackTrace();
             }
-        }, 0, 2, TimeUnit.SECONDS);
+        }, 0, period, TimeUnit.MILLISECONDS);
 
         Runtime.getRuntime().addShutdownHook(new Thread(Main::cleanup));
 
-        System.out.println("Started!");
+        communication.startReceiveLoop();
+    }
+
+    private static long parseArgs(String[] args) {
+        if (args.length != 1) {
+            throw new IllegalArgumentException("Expected exactly one argument, the sending period (in ms)");
+        }
+
+        return Long.parseLong(args[0]);
     }
 
     private static void generateAndSend() throws TransformerException, ParserConfigurationException, IOException {
         GridPosition[] moles = gen.generateRandomMoles();
         String molesXML = enc.toXML(round++, moles);
-        sender.send(molesXML);
+        communication.send(molesXML);
     }
 
     private static void cleanup() {
         executor.shutdownNow();
-        sender.close();
+        communication.close();
         System.out.println("Cleaned up!");
     }
 
