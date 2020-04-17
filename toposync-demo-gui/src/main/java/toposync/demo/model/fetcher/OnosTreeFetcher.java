@@ -158,7 +158,7 @@ public class OnosTreeFetcher implements TreeFetcher {
             pop.setAttribute("ui.class", "vnf-pop");
             Node vnf = g.addNode("vnf");
             vnf.setAttribute("ui.class", "vnf");
-            vnf.setAttribute("ui.label", "transcoder");
+            vnf.setAttribute("ui.label", "transcoder VNF");
             Edge vnfToPop = g.addEdge("vnf->pop", pop.getId(), vnf.getId(), true);
             vnfToPop.setAttribute("ui.class", "overlayEdge" + i);
             Edge popToVnf = g.addEdge("pop->vnf", vnf.getId(), pop.getId(), true);
