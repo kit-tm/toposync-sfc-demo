@@ -43,6 +43,10 @@ public class SolutionInstaller {
         return solution;
     }
 
+    public void invalidateSolution() {
+        this.solution = null;
+    }
+
     public SolutionInstaller(INfvTreeFlowPusher flowPusher, NfvInstantiator instantiator, DeviceService deviceService
             , HostService hostService, ProgressMonitor progressMonitor) {
         this.flowPusher = flowPusher;

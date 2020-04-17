@@ -5,8 +5,8 @@ import gurobi.GRBEnv;
 import gurobi.GRBException;
 import main.rest.RESTDispatcher;
 import main.rest.SolutionInstaller;
+import main.rest.SolutionInvalidator;
 import main.rest.TreeComputation;
-import main.rest.provide.SolutionInvalidator;
 import main.rest.provide.TreeProvider;
 import main.view.ProgressWindow;
 import org.apache.felix.scr.annotations.*;
@@ -106,7 +106,7 @@ public class TopoSyncMain implements PacketProcessor {
 
             TreeComputation treeComputation = new TreeComputation(requestGenerator, env, installer, progressMonitor);
             TreeProvider provider = new TreeProvider();
-            solutionInvalidator = new SolutionInvalidator(provider);
+            solutionInvalidator = new SolutionInvalidator(provider, installer);
             serverREST.createContext("/tree", new RESTDispatcher(treeComputation, provider));
             serverREST.start();
             log.info("Set up server..");
