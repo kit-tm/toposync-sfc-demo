@@ -17,6 +17,8 @@ public class GridPanel extends JPanel {
     private long round;
     private Responder responder;
 
+    private Collection<GridPosition> currentMoles;
+
     public GridPanel(int rows, int cols, int cellSize, Responder responder) {
         this.responder = responder;
         cells = new Cell[rows][cols];
@@ -40,14 +42,16 @@ public class GridPanel extends JPanel {
     }
 
     public void wipeMoles() {
-        SwingUtilities.invokeLater(() -> {
-            for (int row = 0; row < cells.length; row++) {
-                for (int col = 0; col < cells[row].length; col++) {
-                    cells[row][col].setBackground(INACTIVE);
-                }
-            }
-            repaint();
-        });
+        if (currentMoles == null) {
+            return;
+        }
+
+        for (GridPosition mole : currentMoles) {
+            SwingUtilities.invokeLater(() -> cells[mole.row][mole.col].setBackground(INACTIVE));
+        }
+        SwingUtilities.invokeLater(this::repaint);
+
+        currentMoles = null;
     }
 
     public void setRound(long round) {
@@ -55,18 +59,16 @@ public class GridPanel extends JPanel {
     }
 
     public void showMoles(Collection<GridPosition> moles) {
-        SwingUtilities.invokeLater(() -> {
-            for (GridPosition mole : moles) {
-                cells[mole.row][mole.col].setBackground(ACTIVE);
-                repaint();
-            }
-            repaint();
-        });
+        currentMoles = moles;
+        for (GridPosition mole : moles) {
+            SwingUtilities.invokeLater(() -> cells[mole.row][mole.col].setBackground(ACTIVE));
+        }
+        SwingUtilities.invokeLater(this::repaint);
     }
 
     public void cellClicked(Cell cell) {
         if (cell.getBackground() == ACTIVE) {
-            cell.setBackground(CLICKED_CORRECT);
+            SwingUtilities.invokeLater(() -> cell.setBackground(CLICKED_CORRECT));
         }
 
         try {

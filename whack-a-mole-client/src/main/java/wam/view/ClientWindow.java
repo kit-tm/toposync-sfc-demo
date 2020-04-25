@@ -17,9 +17,11 @@ public class ClientWindow extends JFrame {
     }
 
     public void showMoles(long round, Collection<GridPosition> moles) {
-        gridPane.setRound(round);
-        gridPane.wipeMoles();
-        gridPane.showMoles(moles);
+        if (gridPane != null) {
+            gridPane.setRound(round);
+            gridPane.wipeMoles();
+            gridPane.showMoles(moles);
+        }
     }
 
     private void createAndShowGui(Responder responder) {
