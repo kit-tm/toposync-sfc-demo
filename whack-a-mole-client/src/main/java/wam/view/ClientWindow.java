@@ -6,8 +6,8 @@ import javax.swing.*;
 import java.util.Collection;
 
 public class ClientWindow extends JFrame {
-    private static final int ROWS = 4;
-    private static final int COLS = 4;
+    private static final int ROWS = 3;
+    private static final int COLS = 3;
     private static final int CELL_SIZE = 100;
     private GridPanel gridPane;
 
