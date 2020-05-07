@@ -7,6 +7,7 @@ import toposync.demo.model.GUI;
 import toposync.demo.model.State;
 import toposync.demo.model.fetcher.TopologyFetcher;
 import toposync.demo.model.fetcher.TreeFetcher;
+import toposync.demo.model.fetcher.TreeRemover;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -17,14 +18,28 @@ public class Controller {
     private GUI gui;
     private TopologyFetcher topoFetcher;
     private TreeFetcher treeFetcher;
+    private TreeRemover treeRemover;
 
 
-    public Controller(GUI gui, TopologyFetcher topoFetcher, TreeFetcher treeFetcher) {
+    public Controller(GUI gui, TopologyFetcher topoFetcher, TreeFetcher treeFetcher, TreeRemover remover) {
         this.state = new State();
         this.gui = Objects.requireNonNull(gui);
         state.addObserver(gui);
         this.topoFetcher = Objects.requireNonNull(topoFetcher);
         this.treeFetcher = Objects.requireNonNull(treeFetcher);
+        this.treeRemover = remover;
+    }
+
+    public void deleteTree() {
+        try {
+            logger.info("Removing tree..");
+            treeRemover.deleteTree();
+            logger.info("Removed tree");
+            state.setSolution(null);
+        } catch (IOException | InterruptedException e) {
+            gui.showError("Error when removing tree.");
+            logger.error("Error when removing tree.", e);
+        }
     }
 
     public void fetchTopology() {

@@ -29,10 +29,10 @@ public class State {
     }
 
     public void setSolution(Graph solution) {
-        if (solution != null && !(solution.getEdgeCount() == 0 && solution.getNodeCount() != 0)) {
-            merger.merge(topology, solution);
-            updateObservers();
-        }
+        //if (solution != null && !(solution.getEdgeCount() == 0 && solution.getNodeCount() != 0)) {
+        merger.merge(topology, solution);
+        updateObservers();
+        //}
     }
 
     private void updateObservers() {

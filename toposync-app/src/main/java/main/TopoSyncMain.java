@@ -107,7 +107,7 @@ public class TopoSyncMain implements PacketProcessor {
             TreeComputation treeComputation = new TreeComputation(requestGenerator, env, installer, progressMonitor);
             TreeProvider provider = new TreeProvider();
             solutionInvalidator = new SolutionInvalidator(provider, installer);
-            serverREST.createContext("/tree", new RESTDispatcher(treeComputation, provider));
+            serverREST.createContext("/tree", new RESTDispatcher(treeComputation, provider, installer));
             serverREST.start();
             log.info("Set up server..");
         } catch (IOException e) {

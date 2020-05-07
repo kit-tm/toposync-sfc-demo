@@ -7,17 +7,17 @@ import java.awt.*;
 import java.net.URL;
 
 public class ProgressWindow extends JFrame implements ProgressMonitor {
-    private static final String LOADER_FILE = "spinner_32.gif";
-    private static final String CHECKMARK_FILE = "checkmark_32.png";
-    private static final float FONT_SIZE = 34.0f;
-    private Container contPane;
-    private ImageIcon checkmark;
-    private ImageIcon loading;
-    private JLabel calcSol;
-    private JLabel uninstall;
-    private JLabel placeVNF;
-    private JLabel flowRules;
-    private boolean oldSolutionExists;
+    protected static final String LOADER_FILE = "spinner_32.gif";
+    protected static final String CHECKMARK_FILE = "checkmark_32.png";
+    protected static final float FONT_SIZE = 34.0f;
+    protected Container contPane;
+    protected ImageIcon checkmark;
+    protected ImageIcon loading;
+    protected JLabel calcSol;
+    protected JLabel uninstall;
+    protected JLabel placeVNF;
+    protected JLabel flowRules;
+    protected boolean oldSolutionExists;
 
 
     public ProgressWindow() {
@@ -44,12 +44,12 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
 
         this.oldSolutionExists = oldSolutionExists;
 
-        calcSol = new JLabel("Calculating " + ilpType + " solution.", loading, JLabel.CENTER);
+        calcSol = new JLabel("Calculating " + ilpType + " tree.", loading, JLabel.CENTER);
         setFontSize(calcSol);
         add(calcSol);
 
         if (oldSolutionExists) {
-            uninstall = new JLabel("Uninstalling old solution.", JLabel.CENTER);
+            uninstall = new JLabel("Uninstalling old tree.", JLabel.CENTER);
             setFontSize(uninstall);
             add(uninstall);
         }
@@ -96,15 +96,15 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
         setVisible(false);
     }
 
-    private void setLoading(JLabel label) {
+    void setLoading(JLabel label) {
         label.setIcon(loading);
     }
 
-    private void done(JLabel label) {
+    void done(JLabel label) {
         label.setIcon(checkmark);
     }
 
-    private void setFontSize(JLabel label) {
+    void setFontSize(JLabel label) {
         label.setFont(label.getFont().deriveFont(FONT_SIZE));
     }
 

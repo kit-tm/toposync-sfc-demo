@@ -1,10 +1,7 @@
 package toposync.demo;
 
 import toposync.demo.controller.Controller;
-import toposync.demo.model.fetcher.OnosTopologyFetcher;
-import toposync.demo.model.fetcher.OnosTreeFetcher;
-import toposync.demo.model.fetcher.TopologyFetcher;
-import toposync.demo.model.fetcher.TreeFetcher;
+import toposync.demo.model.fetcher.*;
 import toposync.demo.view.DemoUI;
 
 public class Main {
@@ -18,8 +15,9 @@ public class Main {
 
         TopologyFetcher topologyFetcher = new OnosTopologyFetcher();
         TreeFetcher treeFetcher = new OnosTreeFetcher(ui);
+        TreeRemover treeRemover = new OnosTreeRemover();
 
-        Controller controller = new Controller(ui, topologyFetcher, treeFetcher);
+        Controller controller = new Controller(ui, topologyFetcher, treeFetcher, treeRemover);
 
         ui.setController(controller);
 

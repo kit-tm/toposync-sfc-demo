@@ -17,6 +17,7 @@ public class DemoUI extends JFrame implements GUI {
     private Container contentPane;
     private TopoPane topoPane;
     private TreeComputationPane treeComputationPane;
+    private RefreshRemovePane refreshRemovePane;
 
 
     public DemoUI() {
@@ -27,7 +28,7 @@ public class DemoUI extends JFrame implements GUI {
         initFrame();
         initLayout();
         initTopoPane();
-        initRefreshButton();
+        initRefreshRemovePane();
         initTreeComputationPane();
 
         setVisible(true);
@@ -47,14 +48,9 @@ public class DemoUI extends JFrame implements GUI {
         contentPane.add(topoPane);
     }
 
-    private void initRefreshButton() {
-        JButton refresh = new JButton("Refresh");
-        refresh.setAlignmentX(Component.CENTER_ALIGNMENT);
-        contentPane.add(refresh);
-        refresh.addActionListener(e -> {
-            controller.fetchTopology();
-            controller.fetchCurrentTree();
-        });
+    private void initRefreshRemovePane() {
+        refreshRemovePane = new RefreshRemovePane();
+        contentPane.add(refreshRemovePane);
     }
 
     private void initTreeComputationPane() {
@@ -65,6 +61,7 @@ public class DemoUI extends JFrame implements GUI {
     public void setController(Controller controller) {
         this.controller = controller;
         treeComputationPane.setController(controller);
+        refreshRemovePane.setController(controller);
     }
 
     @Override
@@ -76,6 +73,7 @@ public class DemoUI extends JFrame implements GUI {
     public void topoSyncFetched() {
         treeComputationPane.disableTopoSync();
         treeComputationPane.enableShortestPath();
+        refreshRemovePane.setRemoveEnabled(true);
         treeComputationPane.setStatus("TopoSync-SFC tree installed", false);
     }
 
@@ -83,6 +81,7 @@ public class DemoUI extends JFrame implements GUI {
     public void shortestPathFetched() {
         treeComputationPane.disableShortestPath();
         treeComputationPane.enableTopoSync();
+        refreshRemovePane.setRemoveEnabled(true);
         treeComputationPane.setStatus("Shortest-Path-SFC tree installed", false);
     }
 
@@ -98,6 +97,7 @@ public class DemoUI extends JFrame implements GUI {
 
     @Override
     public void reset() {
+        refreshRemovePane.setRemoveEnabled(false);
         treeComputationPane.reset();
     }
 }

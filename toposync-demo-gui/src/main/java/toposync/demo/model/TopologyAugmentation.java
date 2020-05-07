@@ -21,7 +21,6 @@ public class TopologyAugmentation {
      */
     public void merge(Graph topo, Graph sol) {
         Objects.requireNonNull(topo);
-        Objects.requireNonNull(sol);
 
         this.topology = topo;
         this.solution = sol;
@@ -67,9 +66,11 @@ public class TopologyAugmentation {
     }
 
     private void mergeInternal() {
-        copyEdgesFromSolution();
-        copyUiClassFromSolutionNodes();
-        copyUiLabelFromSolutionNodes();
+        if (solution != null) {
+            copyEdgesFromSolution();
+            copyUiClassFromSolutionNodes();
+            copyUiLabelFromSolutionNodes();
+        }
     }
 
     private void copyUiLabelFromSolutionNodes() {

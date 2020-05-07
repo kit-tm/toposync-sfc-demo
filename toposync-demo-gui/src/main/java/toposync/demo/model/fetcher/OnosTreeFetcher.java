@@ -115,7 +115,11 @@ public class OnosTreeFetcher implements TreeFetcher {
                 throw new IllegalStateException("Unexpected solution type: " + type);
         }
 
-        return g;
+        if (g.getNodeCount() == 0 && g.getEdgeCount() == 0) {
+            return null;
+        } else {
+            return g;
+        }
     }
 
     private void addDelaysToGraph(Graph g, JSONObject delays) {

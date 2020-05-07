@@ -32,7 +32,7 @@ public class TreeComputationPane extends JPanel {
     }
 
     private void initTopoSync() {
-        topoSync = new JButton("TopoSync-SFC Tree");
+        topoSync = new JButton("TopoSync-SFC tree");
         add(topoSync);
         topoSync.addActionListener(e -> {
             setStatus("Computing and installing tree..", true);
@@ -43,7 +43,7 @@ public class TreeComputationPane extends JPanel {
     }
 
     private void initShortestPath() {
-        shortestPath = new JButton("Shortest Path-SFC Tree");
+        shortestPath = new JButton("Shortest Path-SFC tree");
         add(shortestPath);
         shortestPath.addActionListener(e -> {
             setStatus("Computing and installing tree..", true);

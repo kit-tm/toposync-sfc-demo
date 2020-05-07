@@ -34,6 +34,7 @@ public class SolutionInstaller {
     private NfvPlacementSolution solution;
     private INfvTreeFlowPusher flowPusher;
     private NfvInstantiator instantiator;
+
     private ProgressMonitor progressMonitor;
 
     private DeviceService deviceService;
@@ -68,7 +69,7 @@ public class SolutionInstaller {
         progressMonitor.flowsInstalled();
     }
 
-    private void uninstallOldSolution() throws InstantiationException {
+    protected void uninstallOldSolution() throws InstantiationException {
         if (solution != null) {
             log.info("deleting old flow rules");
             flowPusher.deleteFlows();
@@ -145,5 +146,13 @@ public class SolutionInstaller {
         AbstractMulticastGroup group = new IgmpMulticastGroup(new IgmpGroupIdentifier(Ip4Address.valueOf(GROUP_IP)));
         NFVPerSourceTree nfvTree = new NFVPerSourceTree(src, solutionLinks, dsts, solutionVnfCps, group);
         flowPusher.pushTree(nfvTree);
+    }
+
+    public void setProgressMonitor(ProgressMonitor progressMonitor) {
+        this.progressMonitor = progressMonitor;
+    }
+
+    public ProgressMonitor getProgressMonitor() {
+        return progressMonitor;
     }
 }
