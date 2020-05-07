@@ -52,6 +52,7 @@ def startWhackAMole(shost, clients):
     SEND_PERIOD_MS = 750
     print('**Starting whack-a-mole server.')
     printAndExecute(shost, 'java -jar ../../whack-a-mole-server/target/whack-a-mole-server-1.0-SNAPSHOT.jar %s &' % SEND_PERIOD_MS)
+    printAndExecute(shost, 'renice -20 $!')
 
     if clients is not None:
         print('**Starting whack-a-mole clients.')
