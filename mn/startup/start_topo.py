@@ -49,7 +49,7 @@ def startPing(shost):
     return plotter_proc
 
 def startWhackAMole(shost, clients):
-    SEND_PERIOD_MS = 750
+    SEND_PERIOD_MS = 2000
     print('**Starting whack-a-mole server.')
     printAndExecute(shost, 'java -jar ../../whack-a-mole-server/target/whack-a-mole-server-1.0-SNAPSHOT.jar %s &' % SEND_PERIOD_MS)
     printAndExecute(shost, 'renice -20 $!')
@@ -58,6 +58,7 @@ def startWhackAMole(shost, clients):
         print('**Starting whack-a-mole clients.')
         for client in clients:
             printAndExecute(client, 'java -jar ../../whack-a-mole-client/target/whack-a-mole-client-1.0-SNAPSHOT.jar %s &' % client.IP())
+            printAndExecute(client, 'renice -20 $!')
 
 def topoInstance(topo, hw):
     inst = None
