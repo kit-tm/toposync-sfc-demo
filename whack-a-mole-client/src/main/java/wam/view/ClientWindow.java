@@ -1,7 +1,5 @@
 package wam.view;
 
-import wam.Responder;
-
 import javax.swing.*;
 import java.util.Collection;
 
@@ -10,10 +8,12 @@ public class ClientWindow extends JFrame {
     private static final int COLS = 3;
     private static final int CELL_SIZE = 100;
     private GridPanel gridPane;
+    private String ip;
 
-    public ClientWindow(String ip, Responder responder) {
-        super(String.format("Whack-A-Mole Client(%s)", ip));
-        SwingUtilities.invokeLater(() -> createAndShowGui(responder));
+    public ClientWindow(String ip) {
+        super(String.format("Client%s (%s)", ip.equals("/10.0.0.10") ? 1 : 2, ip.substring(1)));
+        this.ip = ip;
+        SwingUtilities.invokeLater(this::createAndShowGui);
     }
 
     public void showMoles(long round, Collection<GridPosition> moles) {
@@ -24,8 +24,9 @@ public class ClientWindow extends JFrame {
         }
     }
 
-    private void createAndShowGui(Responder responder) {
-        gridPane = new GridPanel(ROWS, COLS, CELL_SIZE, responder);
+    private void createAndShowGui() {
+        String clientName = (ip.equals("/10.0.0.10")) ? "Client1" : "Client2";
+        gridPane = new GridPanel(ROWS, COLS, CELL_SIZE, clientName);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         getContentPane().add(gridPane);
         pack();

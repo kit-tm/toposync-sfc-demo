@@ -21,12 +21,6 @@ public class Communication {
         this.sock = new DatagramSocket(9090, bindAddr);
     }
 
-    public void send(String response) throws IOException {
-        byte[] buf = response.getBytes(StandardCharsets.UTF_8);
-        DatagramPacket pkt = new DatagramPacket(buf, 0, buf.length, InetAddress.getByName(SERVER_IP_STR), PORT);
-        sock.send(pkt);
-    }
-
     public void startReceiveLoop(ClientWindow window) {
         Thread t = new Thread(() -> receiveLoop(window));
         t.setUncaughtExceptionHandler((e, th) -> th.printStackTrace());

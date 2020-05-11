@@ -14,11 +14,7 @@ public class Main {
         Communication communication = new Communication(ip);
         Runtime.getRuntime().addShutdownHook(new Thread(communication::close));
 
-
-        ResponseCSVEncoder encoder = new ResponseCSVEncoder();
-        Responder responder = new Responder(encoder, communication);
-
-        ClientWindow cw = new ClientWindow(ip.toString(), responder);
+        ClientWindow cw = new ClientWindow(ip.toString());
         communication.startReceiveLoop(cw);
     }
 
