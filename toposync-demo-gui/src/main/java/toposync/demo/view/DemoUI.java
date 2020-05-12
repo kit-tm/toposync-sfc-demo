@@ -16,6 +16,7 @@ public class DemoUI extends JFrame implements GUI {
 
     private Container contentPane;
     private TopoPane topoPane;
+    private DelaySliderPane delaySliderPane;
     private TreeComputationPane treeComputationPane;
     private RefreshRemovePane refreshRemovePane;
 
@@ -28,6 +29,8 @@ public class DemoUI extends JFrame implements GUI {
         initFrame();
         initLayout();
         initTopoPane();
+        initDelaySlider();
+        addSep();
         initRefreshRemovePane();
         initTreeComputationPane();
 
@@ -48,6 +51,17 @@ public class DemoUI extends JFrame implements GUI {
         contentPane.add(topoPane);
     }
 
+    private void initDelaySlider() {
+        delaySliderPane = new DelaySliderPane();
+        contentPane.add(delaySliderPane);
+    }
+
+    private void addSep() {
+        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
+        sep.setBackground(Color.BLACK);
+        add(sep);
+    }
+
     private void initRefreshRemovePane() {
         refreshRemovePane = new RefreshRemovePane();
         contentPane.add(refreshRemovePane);
@@ -62,6 +76,7 @@ public class DemoUI extends JFrame implements GUI {
         this.controller = controller;
         treeComputationPane.setController(controller);
         refreshRemovePane.setController(controller);
+        delaySliderPane.setController(controller);
     }
 
     @Override

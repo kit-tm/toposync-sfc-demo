@@ -5,10 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import toposync.demo.model.GUI;
 import toposync.demo.model.State;
+import toposync.demo.model.delay.DelayChanger;
 import toposync.demo.model.fetcher.TopologyFetcher;
 import toposync.demo.model.fetcher.TreeFetcher;
 import toposync.demo.model.fetcher.TreeRemover;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -19,6 +22,7 @@ public class Controller {
     private TopologyFetcher topoFetcher;
     private TreeFetcher treeFetcher;
     private TreeRemover treeRemover;
+    private DelayChanger delayChanger;
 
 
     public Controller(GUI gui, TopologyFetcher topoFetcher, TreeFetcher treeFetcher, TreeRemover remover) {
@@ -28,6 +32,7 @@ public class Controller {
         this.topoFetcher = Objects.requireNonNull(topoFetcher);
         this.treeFetcher = Objects.requireNonNull(treeFetcher);
         this.treeRemover = remover;
+        this.delayChanger = new DelayChanger();
     }
 
     public void deleteTree() {
@@ -90,6 +95,17 @@ public class Controller {
         } catch (IOException | InterruptedException e) {
             gui.showError("Error when fetching currently installed tree.");
             logger.error("Error when fetching currently installed tree.", e);
+        }
+    }
+
+    public void setLinkDelay(int newDelay, Component errorForward) {
+        System.out.println(String.format("New link delay: %s ms", newDelay));
+
+        try {
+            delayChanger.changeDelay(newDelay);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(errorForward, "Changing delay failed.");
         }
     }
 }
