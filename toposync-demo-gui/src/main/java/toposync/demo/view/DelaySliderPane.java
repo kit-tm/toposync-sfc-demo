@@ -18,9 +18,7 @@ public class DelaySliderPane extends JPanel implements ChangeListener {
     private Controller controller;
 
     public DelaySliderPane() {
-        this.controller = controller;
-
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         JLabel label = new JLabel("Link delay (ms)");
         label.setAlignmentX(CENTER_ALIGNMENT);
         add(label);

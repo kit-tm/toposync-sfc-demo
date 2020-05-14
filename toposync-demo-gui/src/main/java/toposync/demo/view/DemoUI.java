@@ -1,8 +1,6 @@
 package toposync.demo.view;
 
 import org.graphstream.graph.Graph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import toposync.demo.controller.Controller;
 import toposync.demo.model.GUI;
 
@@ -10,15 +8,12 @@ import javax.swing.*;
 import java.awt.*;
 
 public class DemoUI extends JFrame implements GUI {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private Controller controller;
-
     private Container contentPane;
+
     private TopoPane topoPane;
     private DelaySliderPane delaySliderPane;
-    private TreeComputationPane treeComputationPane;
-    private RefreshRemovePane refreshRemovePane;
+    private ButtonsPane buttonsPane;
+    private StatusPane statusPane;
 
 
     public DemoUI() {
@@ -28,11 +23,10 @@ public class DemoUI extends JFrame implements GUI {
 
         initFrame();
         initLayout();
-        initTopoPane();
         initDelaySlider();
-        addSep();
-        initRefreshRemovePane();
-        initTreeComputationPane();
+        initTopoPane();
+        initButtonsPane();
+        initStatusPane();
 
         setVisible(true);
     }
@@ -56,26 +50,18 @@ public class DemoUI extends JFrame implements GUI {
         contentPane.add(delaySliderPane);
     }
 
-    private void addSep() {
-        JSeparator sep = new JSeparator(SwingConstants.HORIZONTAL);
-        sep.setBackground(Color.BLACK);
-        add(sep);
+    private void initButtonsPane() {
+        buttonsPane = new ButtonsPane();
+        contentPane.add(buttonsPane);
     }
 
-    private void initRefreshRemovePane() {
-        refreshRemovePane = new RefreshRemovePane();
-        contentPane.add(refreshRemovePane);
-    }
-
-    private void initTreeComputationPane() {
-        treeComputationPane = new TreeComputationPane();
-        contentPane.add(treeComputationPane);
+    private void initStatusPane() {
+        statusPane = new StatusPane();
+        contentPane.add(statusPane);
     }
 
     public void setController(Controller controller) {
-        this.controller = controller;
-        treeComputationPane.setController(controller);
-        refreshRemovePane.setController(controller);
+        buttonsPane.setController(controller);
         delaySliderPane.setController(controller);
     }
 
@@ -86,18 +72,18 @@ public class DemoUI extends JFrame implements GUI {
 
     @Override
     public void topoSyncFetched() {
-        treeComputationPane.disableTopoSync();
-        treeComputationPane.enableShortestPath();
-        refreshRemovePane.setRemoveEnabled(true);
-        treeComputationPane.setStatus("TopoSync-SFC tree installed", false);
+        buttonsPane.disableTopoSync();
+        buttonsPane.enableShortestPath();
+        buttonsPane.enableRemove();
+        statusPane.setStatus("TopoSync-SFC tree installed", false);
     }
 
     @Override
     public void shortestPathFetched() {
-        treeComputationPane.disableShortestPath();
-        treeComputationPane.enableTopoSync();
-        refreshRemovePane.setRemoveEnabled(true);
-        treeComputationPane.setStatus("Shortest-Path-SFC tree installed", false);
+        buttonsPane.disableShortestPath();
+        buttonsPane.enableTopoSync();
+        buttonsPane.enableRemove();
+        statusPane.setStatus("Shortest-Path-SFC tree installed", false);
     }
 
     @Override
@@ -112,7 +98,7 @@ public class DemoUI extends JFrame implements GUI {
 
     @Override
     public void reset() {
-        refreshRemovePane.setRemoveEnabled(false);
-        treeComputationPane.reset();
+        buttonsPane.reset();
+        statusPane.reset();
     }
 }

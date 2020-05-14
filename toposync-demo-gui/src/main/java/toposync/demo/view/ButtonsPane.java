@@ -5,37 +5,52 @@ import org.slf4j.LoggerFactory;
 import toposync.demo.controller.Controller;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class TreeComputationPane extends JPanel {
+public class ButtonsPane extends JPanel {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private Controller controller;
 
+    private JButton remove;
     private JButton topoSync;
     private JButton shortestPath;
 
-    private JLabel statPre;
-    private JTextArea status;
 
-    public TreeComputationPane() {
+    public ButtonsPane() {
+        setLayout(new GridLayout(2, 2, 10, 10));
+
+        initRefreshButton();
+        initRemoveButton();
+
         initTopoSync();
         initShortestPath();
-        initStatus();
     }
 
-    private void initStatus() {
-        statPre = new JLabel("Status:");
-        status = new JTextArea("No tree installed.");
+    private void initRefreshButton() {
+        JButton refresh = new JButton("Refresh");
+        add(refresh);
+        refresh.addActionListener(e -> {
+            controller.fetchTopology();
+            controller.fetchCurrentTree();
+        });
+    }
 
-        add(statPre);
-        add(status);
+    private void initRemoveButton() {
+        remove = new JButton("Delete tree");
+        add(remove);
+        remove.addActionListener(e -> {
+            controller.deleteTree();
+            controller.fetchTopology();
+            controller.fetchCurrentTree();
+        });
+        remove.setEnabled(false);
     }
 
     private void initTopoSync() {
         topoSync = new JButton("TopoSync-SFC tree");
         add(topoSync);
         topoSync.addActionListener(e -> {
-            setStatus("Computing and installing tree..", true);
             disableShortestPath();
             disableTopoSync();
             onAnotherThread(() -> controller.fetchTopoSyncTree());
@@ -46,7 +61,6 @@ public class TreeComputationPane extends JPanel {
         shortestPath = new JButton("Shortest Path-SFC tree");
         add(shortestPath);
         shortestPath.addActionListener(e -> {
-            setStatus("Computing and installing tree..", true);
             disableShortestPath();
             disableTopoSync();
             onAnotherThread(() -> controller.fetchShortestPathTree());
@@ -59,41 +73,39 @@ public class TreeComputationPane extends JPanel {
         t.start();
     }
 
-    public void setController(Controller controller) {
-        this.controller = controller;
-    }
-
     public void enableTopoSync() {
-        log.debug("enabling toposync button");
         topoSync.setEnabled(true);
     }
 
     public void enableShortestPath() {
-        log.debug("enabling spt button");
         shortestPath.setEnabled(true);
     }
 
     public void disableTopoSync() {
-        log.debug("disabling toposync button");
         topoSync.setEnabled(false);
     }
 
     public void disableShortestPath() {
-        log.debug("disabling spt button");
         shortestPath.setEnabled(false);
     }
 
-    public void setStatus(String statusMessage, boolean showBlinkingCaret) {
-        log.debug("changing status");
-        status.setText(statusMessage);
-        status.getCaret().setVisible(showBlinkingCaret);
+    public void enableRemove() {
+        remove.setEnabled(true);
+    }
+
+    public void disableRemove() {
+        remove.setEnabled(true);
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
     }
 
     public void reset() {
         SwingUtilities.invokeLater(() -> {
+            disableRemove();
             enableShortestPath();
             enableTopoSync();
-            status.setText("No tree installed.");
         });
     }
 }
