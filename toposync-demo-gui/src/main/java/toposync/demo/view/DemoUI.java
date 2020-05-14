@@ -101,4 +101,9 @@ public class DemoUI extends JFrame implements GUI {
         buttonsPane.reset();
         statusPane.reset();
     }
+
+    @Override
+    public void setDelay(int delay) {
+        delaySliderPane.setDelay(delay);
+    }
 }

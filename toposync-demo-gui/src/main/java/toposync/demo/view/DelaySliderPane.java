@@ -37,6 +37,15 @@ public class DelaySliderPane extends JPanel implements ChangeListener {
         this.controller = controller;
     }
 
+    public void setDelay(int ms) {
+        if (ms == -1) { // querying delay was not successfull (e.g. topo not set up yet)
+            slider.setEnabled(false);
+        } else {
+            slider.setEnabled(true);
+            slider.setValue(ms);
+        }
+    }
+
     @Override
     public void stateChanged(ChangeEvent e) {
         JSlider source = (JSlider) e.getSource();

@@ -33,6 +33,7 @@ public class ButtonsPane extends JPanel {
         refresh.addActionListener(e -> {
             controller.fetchTopology();
             controller.fetchCurrentTree();
+            controller.updateLinkDelay(this);
         });
     }
 
@@ -94,7 +95,7 @@ public class ButtonsPane extends JPanel {
     }
 
     public void disableRemove() {
-        remove.setEnabled(true);
+        remove.setEnabled(false);
     }
 
     public void setController(Controller controller) {

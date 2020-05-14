@@ -8,4 +8,6 @@ public interface GUI extends StateObserver {
     void shortestPathFetched();
 
     void reset();
+
+    void setDelay(int delay);
 }
