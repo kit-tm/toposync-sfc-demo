@@ -3,11 +3,11 @@ package main;
 public interface ProgressMonitor {
     void init(boolean oldSolutionExists, String ilpType);
 
-    void solutionCalculated();
+    void solutionCalculated(long durationMs);
 
-    void oldSolutionUninstalled();
+    void oldSolutionUninstalled(long durationMs);
 
-    void vnfPlaced();
+    void vnfPlaced(long durationMs);
 
-    void flowsInstalled();
+    void flowsInstalled(long durationMs);
 }

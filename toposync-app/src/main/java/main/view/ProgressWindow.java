@@ -22,7 +22,7 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
 
     public ProgressWindow() {
         super("Progress");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(HIDE_ON_CLOSE);
         contPane = getContentPane();
 
         initLayout();
@@ -68,46 +68,55 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
     }
 
     @Override
-    public void solutionCalculated() {
-        calcSol.setIcon(checkmark);
+    public void solutionCalculated(long durationMs) {
+        done(calcSol, durationMs);
+
         if (oldSolutionExists) {
             setLoading(uninstall);
         } else {
             setLoading(placeVNF);
         }
-        pack();
     }
 
     @Override
-    public void oldSolutionUninstalled() {
-        done(uninstall);
+    public void oldSolutionUninstalled(long durationMs) {
+        done(uninstall, durationMs);
         setLoading(placeVNF);
     }
 
     @Override
-    public void vnfPlaced() {
-        done(placeVNF);
+    public void vnfPlaced(long durationMs) {
+        done(placeVNF, durationMs);
         setLoading(flowRules);
     }
 
     @Override
-    public void flowsInstalled() {
-        done(flowRules);
-        setVisible(false);
+    public void flowsInstalled(long durationMs) {
+        done(flowRules, durationMs);
     }
 
     void setLoading(JLabel label) {
-        label.setIcon(loading);
+        SwingUtilities.invokeLater(() -> {
+            label.setIcon(loading);
+            pack();
+            repaint();
+        });
     }
 
-    void done(JLabel label) {
-        label.setIcon(checkmark);
+    void done(JLabel label, long durationMs) {
+        String newLabelText = String.format("%s (%s ms)", label.getText(), durationMs);
+
+        SwingUtilities.invokeLater(() -> {
+            label.setIcon(checkmark);
+            label.setText(newLabelText);
+            pack();
+            repaint();
+        });
     }
 
     void setFontSize(JLabel label) {
         label.setFont(label.getFont().deriveFont(FONT_SIZE));
     }
-
 
     /**
      * Returns an ImageIcon, or null if the path was invalid.
@@ -124,17 +133,17 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
 
 
     // for testing purposes
-    /*
+
     public static void main(String[] args) throws InterruptedException {
         ProgressMonitor pm = new ProgressWindow();
         pm.init(true, "Shortest-Path-SFC");
         Thread.sleep(2000);
-        pm.solutionCalculated();
+        pm.solutionCalculated(500);
         Thread.sleep(2000);
-        pm.oldSolutionUninstalled();
+        pm.oldSolutionUninstalled(700);
         Thread.sleep(2000);
-        pm.vnfPlaced();
+        pm.vnfPlaced(2000);
         Thread.sleep(2000);
-        pm.flowsInstalled();
-    }*/
+        pm.flowsInstalled(53);
+    }
 }

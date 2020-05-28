@@ -61,21 +61,29 @@ public class SolutionInstaller {
         log.info("uninstalling old solution...");
         uninstallOldSolution();
         this.solution = solution;
+
         log.info("placing VNFs..");
+        long beforeTs = System.currentTimeMillis();
         Map<NprNfvTypes.Type, Set<ConnectPoint>> vnfConnectPoints = placeVNFs();
-        progressMonitor.vnfPlaced();
+        long taskTime = System.currentTimeMillis() - beforeTs;
+        progressMonitor.vnfPlaced(taskTime);
+
         log.info("pushing flows..");
+        beforeTs = System.currentTimeMillis();
         pushFlows(vnfConnectPoints);
-        progressMonitor.flowsInstalled();
+        taskTime = System.currentTimeMillis() - beforeTs;
+        progressMonitor.flowsInstalled(taskTime);
     }
 
     protected void uninstallOldSolution() throws InstantiationException {
         if (solution != null) {
             log.info("deleting old flow rules");
+            long beforeTs = System.currentTimeMillis();
             flowPusher.deleteFlows();
             log.info("removing old VNF instances");
             removeVNFs();
-            progressMonitor.oldSolutionUninstalled();
+            long taskTime = System.currentTimeMillis() - beforeTs;
+            progressMonitor.oldSolutionUninstalled(taskTime);
         }
     }
 

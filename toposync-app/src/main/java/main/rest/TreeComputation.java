@@ -47,6 +47,7 @@ public class TreeComputation {
 
         final boolean oldSolutionIsInstalled = (installer.getInstalledSolution() != null);
 
+        long beforeTs = System.currentTimeMillis();
         if (requestURI.equals(TOPOSYNC_REQUEST_URI)) {
             logger.info("Calculating TopoSync-SFC tree...");
             progressMonitor.init(oldSolutionIsInstalled, "TopoSync-SFC");
@@ -60,7 +61,8 @@ public class TreeComputation {
             throw new IllegalStateException();
         }
 
-        progressMonitor.solutionCalculated();
+        long taskTime = System.currentTimeMillis() - beforeTs;
+        progressMonitor.solutionCalculated(taskTime);
 
         String solutionJson = null;
 
