@@ -49,7 +49,7 @@ public class ProgressWindow extends JFrame implements ProgressMonitor {
         add(calcSol);
 
         if (oldSolutionExists) {
-            uninstall = new JLabel("Uninstalling old tree.", JLabel.CENTER);
+            uninstall = new JLabel("Uninstalling previous tree.", JLabel.CENTER);
             setFontSize(uninstall);
             add(uninstall);
         }
