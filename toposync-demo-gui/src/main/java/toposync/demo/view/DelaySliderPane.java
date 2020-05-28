@@ -10,7 +10,7 @@ import java.awt.*;
 public class DelaySliderPane extends JPanel implements ChangeListener {
     private static int MIN_DELAY = 50;
     private static int MAX_DELAY = 500;
-    private static int INIT_DELAY = 300;
+    private static int INIT_DELAY = 50;
     private int currentDelay = INIT_DELAY;
 
 
