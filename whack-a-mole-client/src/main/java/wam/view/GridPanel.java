@@ -8,6 +8,7 @@ import java.util.Collection;
 public class GridPanel extends JPanel {
     private static final Color INACTIVE = Color.LIGHT_GRAY;
     private static final Color ACTIVE = Color.RED;
+    private static final float LARGE_FONT_SIZE = 30.0f; // used in HW setup (fullscreen whack-a-mole)
 
     private Cell[][] cells;
     private long round;
@@ -16,7 +17,7 @@ public class GridPanel extends JPanel {
 
     private String clientName;
 
-    public GridPanel(int rows, int cols, int cellSize, String clientName) {
+    public GridPanel(int rows, int cols, int cellSize, String clientName, boolean useLargeFont) {
         this.clientName = clientName;
 
         cells = new Cell[rows][cols];
@@ -31,6 +32,11 @@ public class GridPanel extends JPanel {
                 cell.setForeground(Color.BLACK);
                 cell.setBorder(new LineBorder(Color.BLACK));
                 cell.setPreferredSize(prefSize);
+
+                if (useLargeFont) {
+                    cell.setFont(cell.getFont().deriveFont(LARGE_FONT_SIZE));
+                }
+
                 add(cell);
                 cells[row][col] = cell;
             }

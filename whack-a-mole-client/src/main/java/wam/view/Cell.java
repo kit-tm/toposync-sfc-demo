@@ -8,6 +8,8 @@ public class Cell extends JLabel {
     public Cell(GridPosition pos) {
         super();
         this.pos = pos;
+        this.setVerticalAlignment(SwingConstants.CENTER);
+        this.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
 }
