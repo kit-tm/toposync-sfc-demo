@@ -23,6 +23,10 @@ public class ClientWindow extends JFrame {
             gridPane.setRound(round);
             gridPane.wipeMoles();
             gridPane.showMoles(moles);
+            SwingUtilities.invokeLater(() -> {
+                repaint();
+                revalidate();
+            });
         }
     }
 

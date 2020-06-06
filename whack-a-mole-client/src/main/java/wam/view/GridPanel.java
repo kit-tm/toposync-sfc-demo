@@ -50,12 +50,9 @@ public class GridPanel extends JPanel {
 
         for (GridPosition mole : currentMoles) {
             Cell cell = cells[mole.row][mole.col];
-            SwingUtilities.invokeLater(() -> {
-                cell.setBackground(INACTIVE);
-                cell.setText(null);
-            });
+            cell.setBackground(INACTIVE);
+            cell.setText(null);
         }
-        SwingUtilities.invokeLater(this::repaint);
 
         currentMoles = null;
     }

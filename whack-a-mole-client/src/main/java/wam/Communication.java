@@ -14,11 +14,10 @@ import java.util.Set;
 
 public class Communication {
     private static final int PORT = 9090;
-    private static final String SERVER_IP_STR = "10.0.0.1";
     private DatagramSocket sock;
 
     public Communication(InetAddress bindAddr) throws SocketException {
-        this.sock = new DatagramSocket(9090, bindAddr);
+        this.sock = new DatagramSocket(PORT, bindAddr);
     }
 
     public void startReceiveLoop(ClientWindow window) {
@@ -55,7 +54,6 @@ public class Communication {
                     int col = Integer.parseInt(rowCol[1]);
                     moles.add(new GridPosition(row, col));
                 }
-
             }
 
             window.showMoles(round, moles);
@@ -65,5 +63,4 @@ public class Communication {
     public void close() {
         sock.close();
     }
-
 }
