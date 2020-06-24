@@ -8,21 +8,26 @@ node {
 
 node.server {
     shape: circle;
-    fill-color: blue;
+    fill-color: purple;
 }
 
-node.client {
+node.client1 {
     shape: circle;
-    fill-color: green;
+    fill-color: red;
+}
+
+node.client2 {
+    shape: circle;
+    fill-color: blue;
 }
 
 node.vnf {
     shape: circle;
-    fill-color: red;
+    fill-color: green;
 }
 
 edge.overlayEdge0 {
-    fill-color: red;
+    fill-color: purple;
     stroke-width: 1px;
 }
 

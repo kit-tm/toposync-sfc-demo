@@ -123,12 +123,16 @@ public class OnosTopologyFetcher implements TopologyFetcher {
                 hostNode.setAttribute("ui.label", "server");
                 logger.debug("Setting ui.class and label server");
             } else {
-                hostNode.setAttribute("ui.class", "client");
+                String labelClass = null;
                 if (ip.equals("10.0.0.10")) {
-                    hostNode.setAttribute("ui.label", "client1");
+                    labelClass = "client1";
                 } else if (ip.equals("10.0.0.11")) {
-                    hostNode.setAttribute("ui.label", "client2");
+                    labelClass = "client2";
+                } else {
+                    logger.warn("Unknown host! (host ip: {})", ip);
                 }
+                hostNode.setAttribute("ui.class", labelClass);
+                hostNode.setAttribute("ui.label", labelClass);
                 logger.debug("Setting ui.class and label client");
             }
 
